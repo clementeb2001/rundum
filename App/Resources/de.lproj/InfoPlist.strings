@@ -1,0 +1,3 @@
+"NSCalendarsUsageDescription" = "Rundum zeigt deine ausgewählten Kalender in deinem persönlichen Dashboard.";
+"NSCalendarsFullAccessUsageDescription" = "Rundum liest deine ausgewählten Kalender für deinen Tagesüberblick. Private Termine werden nicht hochgeladen.";
+"NSHealthShareUsageDescription" = "Rundum liest Schritte, Schlaf, Herzfrequenz und Workouts nur für dein lokales Dashboard.";

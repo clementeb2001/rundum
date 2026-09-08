@@ -1,0 +1,7 @@
+// Copy to Local.xcconfig and enter values. Only use the PUBLIC anon/publishable key.
+// xcconfig parses // as a comment, hence the $() in the HTTPS URL.
+SUPABASE_URL = https:/$()/YOUR-PROJECT.supabase.co
+SUPABASE_ANON_KEY = YOUR-PUBLIC-ANON-KEY
+DEVELOPMENT_TEAM = YOUR-APPLE-TEAM-ID
+APP_GROUP_ID = group.YOUR-DOMAIN.rundum
+PRO_PRODUCT_ID = app.rundum.pro.monthly

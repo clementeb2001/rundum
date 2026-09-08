@@ -1,0 +1,3 @@
+"NSCalendarsUsageDescription" = "Rundum displays your selected calendars in your personal dashboard.";
+"NSCalendarsFullAccessUsageDescription" = "Rundum reads your selected calendars for your daily overview. Private events are not uploaded.";
+"NSHealthShareUsageDescription" = "Rundum reads steps, sleep, heart rate and workouts only for your local dashboard.";

@@ -1,0 +1,3 @@
+"NSCalendarsUsageDescription" = "Rundum affiche tes calendriers sélectionnés dans ton tableau de bord personnel.";
+"NSCalendarsFullAccessUsageDescription" = "Rundum lit tes calendriers pour ton aperçu quotidien. Les rendez-vous privés ne sont pas envoyés au serveur.";
+"NSHealthShareUsageDescription" = "Rundum lit les pas, le sommeil, la fréquence cardiaque et les entraînements uniquement pour ton tableau de bord local.";

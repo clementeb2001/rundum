@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleDisplayName</key><string>Rundum</string>
+<key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+<key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string>
+<key>CFBundleName</key><string>$(PRODUCT_NAME)</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleShortVersionString</key><string>$(MARKETING_VERSION)</string>
+<key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
+<key>LSRequiresIPhoneOS</key><true/>
+<key>UILaunchScreen</key><dict/>
+<key>UIApplicationSceneManifest</key><dict><key>UIApplicationSupportsMultipleScenes</key><false/></dict>
+<key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string><string>UIInterfaceOrientationLandscapeLeft</string><string>UIInterfaceOrientationLandscapeRight</string></array>
+<key>NSCalendarsUsageDescription</key><string>Rundum zeigt deine ausgewählten Kalender in deinem persönlichen Dashboard.</string>
+<key>NSCalendarsFullAccessUsageDescription</key><string>Rundum liest deine ausgewählten Kalender für deinen Tagesüberblick. Private Termine werden nicht hochgeladen.</string>
+<key>NSHealthShareUsageDescription</key><string>Rundum liest Schritte, Schlaf, Herzfrequenz und Workouts nur für dein lokales Dashboard.</string>
+<key>APP_GROUP_ID</key><string>$(APP_GROUP_ID)</string>
+<key>SUPABASE_URL</key><string>$(SUPABASE_URL)</string>
+<key>SUPABASE_ANON_KEY</key><string>$(SUPABASE_ANON_KEY)</string>
+<key>PRO_PRODUCT_ID</key><string>$(PRO_PRODUCT_ID)</string>
+</dict></plist>
