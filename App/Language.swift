@@ -18,6 +18,7 @@ struct Copy {
         case .sleep: return self("Schlaf", "Sommeil", "Sleep")
         case .heart: return self("Herzfrequenz", "Fréquence cardiaque", "Heart rate")
         case .workouts: return self("Training", "Entraînement", "Workouts")
+        case .weather: return self("Wetter", "Météo", "Weather")
         default: return kind.rawValue
         }
     }

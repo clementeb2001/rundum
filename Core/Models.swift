@@ -8,11 +8,12 @@ public struct CardKind: RawRepresentable, Codable, Hashable, Identifiable {
     public static let sleep = Self(rawValue: "sleep")
     public static let heart = Self(rawValue: "heart")
     public static let workouts = Self(rawValue: "workouts")
+    public static let weather = Self(rawValue: "weather")
     public init(from decoder: Decoder) throws { rawValue = try decoder.singleValueContainer().decode(String.self) }
     public func encode(to encoder: Encoder) throws { var container = encoder.singleValueContainer(); try container.encode(rawValue) }
     public var id: String { rawValue }
     public var symbol: String {
-        switch self { case .calendar: return "calendar"; case .steps: return "figure.walk"; case .sleep: return "moon.stars.fill"; case .heart: return "heart.fill"; case .workouts: return "figure.run"; default: return "square.grid.2x2" }
+        switch self { case .calendar: return "calendar"; case .steps: return "figure.walk"; case .sleep: return "moon.stars.fill"; case .heart: return "heart.fill"; case .workouts: return "figure.run"; case .weather: return "cloud.sun.fill"; default: return "square.grid.2x2" }
     }
 }
 public enum CardSize: String, Codable, CaseIterable { case small, medium, large }

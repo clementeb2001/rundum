@@ -19,4 +19,8 @@
 <key>SUPABASE_URL</key><string>$(SUPABASE_URL)</string>
 <key>SUPABASE_ANON_KEY</key><string>$(SUPABASE_ANON_KEY)</string>
 <key>PRO_PRODUCT_ID</key><string>$(PRO_PRODUCT_ID)</string>
+<key>NSLocationWhenInUseUsageDescription</key><string>Rundum verwendet deinen Standort nur auf Wunsch einmalig und gerundet für das Wetter. Alternativ kannst du eine Stadt wählen.</string>
+<key>OPERATOR_NAME</key><string>$(OPERATOR_NAME)</string>
+<key>OPERATOR_ADDRESS</key><string>$(OPERATOR_ADDRESS)</string>
+<key>SUPPORT_EMAIL</key><string>$(SUPPORT_EMAIL)</string>
 </dict></plist>

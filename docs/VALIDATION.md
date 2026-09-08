@@ -1,5 +1,22 @@
 # Prüfprotokoll · 2026-09-08
 
+## Nachtrag: Installation auf dem persönlichen iPhone
+
+- Das persönliche iPhone wurde in Xcode als Testgerät registriert. Xcode hat die verwalteten Entwicklungsprofile für App und Widget erfolgreich bereitgestellt.
+- Nach den vom Nutzer bestätigten macOS-Schlüsselbund-Abfragen wurde Rundum auf dem iPhone installiert. Die gezielte Geräteabfrage bestätigte am 08.09.2026 um 19:53 Uhr `app.rundum.ios`, Version 1.0, Build 1.
+- Damit ist die Geräteinstallation bestätigt. Ein vollständiger Funktionstest mit realen HealthKit- und WeatherKit-Daten ist damit noch nicht nachgewiesen. Die älteren Aussagen zur fehlenden Geräteinstallation unten beschreiben den damaligen Stand.
+
+## Aktualisierung: Wetter und persönlicher iPhone-Test
+
+- Der frühere CoreSimulator-Fehler war eine Zugriffsbeschränkung der Ausführungsumgebung. Mit passenden Rechten gelang der vollständige Simulator-Build inklusive App-Icon und Widget, und die App wurde sichtbar gestartet.
+- Auch der aktuelle Simulator-Build mit WeatherKit-Karte, Ortsauswahl, Rechtsseiten, konfigurierbaren Bundle-IDs und zusätzlichem Device-Schema ist erfolgreich.
+- Der aktuelle unsigned iPhone-Build (`Rundum Device`, `iphoneos`, `generic/platform=iOS`, `CODE_SIGNING_ALLOWED=NO`) ist ebenfalls erfolgreich. Dies prüft Kompilierung und Verpackung für iPhone-Hardware, aber noch keine Signierung oder Installation auf dem Gerät.
+- Die neue Wetterkarte wurde über die Bibliothek aktiviert. Die Ortsauswahl mit Luxemburg und weiteren Städten öffnet sich korrekt; ohne WeatherKit-Freischaltung werden fehlgeschlagene Abrufe sichtbar mit Wiederholungsmöglichkeit dargestellt. Alle vier bestehenden Core-Tests bestehen weiterhin.
+- Reale WeatherKit-Anfragen benötigen aktivierte App-ID und passende Signierung. HealthKit, WeatherKit und Installation auf dem persönlichen iPhone sind noch nicht auf echter Hardware bestätigt: `devicectl list devices` meldete kein angeschlossenes Gerät.
+- Betreiberangaben werden auf ausdrücklichen Wunsch erst später ergänzt. Rechtsseiten sind Testentwürfe; Supabase bleibt unkonfiguriert. Kein Produktionsstatus wird behauptet.
+
+Die nachfolgenden Einträge dokumentieren den ursprünglichen Build-Verlauf und werden durch diese Aktualisierung ergänzt.
+
 ## Durchgeführt
 
 - Xcode 26.6 / Swift 6.3.3, iOS-Mindestversion 16.0.

@@ -1,3 +1,4 @@
 "NSCalendarsUsageDescription" = "Rundum zeigt deine ausgewählten Kalender in deinem persönlichen Dashboard.";
 "NSCalendarsFullAccessUsageDescription" = "Rundum liest deine ausgewählten Kalender für deinen Tagesüberblick. Private Termine werden nicht hochgeladen.";
 "NSHealthShareUsageDescription" = "Rundum liest Schritte, Schlaf, Herzfrequenz und Workouts nur für dein lokales Dashboard.";
+"NSLocationWhenInUseUsageDescription" = "Rundum verwendet deinen Standort nur auf Wunsch einmalig und gerundet für das Wetter. Alternativ kannst du eine Stadt wählen.";

@@ -6,11 +6,13 @@ import SwiftUI
     @StateObject private var health = HealthService()
     @StateObject private var cloud = CloudService()
     @StateObject private var purchases = PurchaseService()
+    @StateObject private var weather = WeatherModel()
     @Environment(\.scenePhase) private var phase
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environmentObject(state).environmentObject(calendar).environmentObject(health).environmentObject(cloud).environmentObject(purchases)
+                .environmentObject(weather)
                 .environment(\.locale, Locale(identifier: state.language.rawValue))
                 .tint(Palette.teal)
                 .task { state.switchAccount(cloud.session?.user.id); await refresh() }
@@ -24,6 +26,7 @@ import SwiftUI
     }
     private func refresh() async {
         calendar.load(); await health.load(); await purchases.refresh()
+        if state.configuration.visibleCards(isPro: purchases.isPro).contains(where: { $0.id == .weather }) { await weather.refresh() }
         await state.synchronize(cloud: cloud)
         if cloud.session != nil { do { try await cloud.loadCalendars() } catch { cloud.error = error.localizedDescription } }
         WidgetSnapshot.publish(cards: state.configuration.visibleCards(isPro: purchases.isPro), events: calendar.events, copy: state.copy)

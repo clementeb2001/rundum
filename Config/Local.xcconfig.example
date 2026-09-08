@@ -5,3 +5,9 @@ SUPABASE_ANON_KEY = YOUR-PUBLIC-ANON-KEY
 DEVELOPMENT_TEAM = YOUR-APPLE-TEAM-ID
 APP_GROUP_ID = group.YOUR-DOMAIN.rundum
 PRO_PRODUCT_ID = app.rundum.pro.monthly
+APP_BUNDLE_ID = YOUR-REVERSE-DOMAIN.rundum
+WIDGET_BUNDLE_ID = YOUR-REVERSE-DOMAIN.rundum.widget
+// Optional for personal tests; complete and review before public release.
+OPERATOR_NAME =
+OPERATOR_ADDRESS =
+SUPPORT_EMAIL =

@@ -18,7 +18,8 @@ def serialize(value):
 
 project_id = uid('project')
 config_file = add('config', 'PBXFileReference', lastKnownFileType='text.xcconfig', path='Config/App.xcconfig', sourceTree='<group>')
-children = [config_file]
+storekit_file = add('storekit', 'PBXFileReference', lastKnownFileType='text', path='Config/Rundum.storekit', sourceTree='<group>')
+children = [config_file, storekit_file]
 products = []
 targets = []
 for name, folder, bundle, plist, entitlement in [
@@ -55,6 +56,7 @@ for name, folder, bundle, plist, entitlement in [
     for mode in ['Debug', 'Release']:
         settings = {'PRODUCT_NAME': name, 'PRODUCT_BUNDLE_IDENTIFIER': bundle, 'INFOPLIST_FILE': plist, 'CODE_SIGN_ENTITLEMENTS': entitlement, 'CODE_SIGN_STYLE': 'Automatic', 'SDKROOT': 'iphoneos', 'SUPPORTED_PLATFORMS': 'iphoneos iphonesimulator', 'SWIFT_OPTIMIZATION_LEVEL': '-Onone' if mode == 'Debug' else '-O', 'SWIFT_EMIT_LOC_STRINGS': 'YES', 'LD_RUNPATH_SEARCH_PATHS': ['$(inherited)', '@executable_path/Frameworks'], 'ENABLE_USER_SCRIPT_SANDBOXING': 'YES'}
         if name == 'Rundum': settings['ASSETCATALOG_COMPILER_APPICON_NAME'] = 'AppIcon'
+        settings['PRODUCT_BUNDLE_IDENTIFIER'] = '$(APP_BUNDLE_ID)' if name == 'Rundum' else '$(WIDGET_BUNDLE_ID)'
         if name != 'Rundum': settings.update(APPLICATION_EXTENSION_API_ONLY='YES', SKIP_INSTALL='YES', LD_RUNPATH_SEARCH_PATHS=['$(inherited)', '@executable_path/Frameworks', '@executable_path/../../Frameworks'])
         configs.append(add(name+mode, 'XCBuildConfiguration', baseConfigurationReference=config_file, buildSettings=settings, name=mode))
     configuration_list = add(name+'configs', 'XCConfigurationList', buildConfigurations=configs, defaultConfigurationIsVisible='0', defaultConfigurationName='Release')
@@ -82,4 +84,7 @@ schemes.mkdir(parents=True, exist_ok=True)
  <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" allowLocationSimulation="YES"><BuildableProductRunnable runnableDebuggingMode="0"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{targets[0]}" BuildableName="Rundum.app" BlueprintName="Rundum" ReferencedContainer="container:Rundum.xcodeproj"/></BuildableProductRunnable></LaunchAction>
  <TestAction buildConfiguration="Debug"/><ProfileAction buildConfiguration="Release"/><AnalyzeAction buildConfiguration="Debug"/><ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"/>
 </Scheme>''')
+scheme_path = schemes / 'Rundum.xcscheme'
+scheme_path.write_text(scheme_path.read_text().replace('</LaunchAction>', '<StoreKitConfigurationFileReference identifier="../../Config/Rundum.storekit"/></LaunchAction>'))
+(schemes/'Rundum Device.xcscheme').write_text(scheme_path.read_text().replace('<StoreKitConfigurationFileReference identifier="../../Config/Rundum.storekit"/>', ''))
 print(project)

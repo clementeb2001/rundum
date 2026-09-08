@@ -6,3 +6,15 @@ xcuserdata/
 .DS_Store
 Config/Local.xcconfig
 .env
+.env.*
+!.env.example
+.swiftpm/
+*.p8
+*.p12
+*.pfx
+*.pem
+*.key
+*.mobileprovision
+*.provisionprofile
+*.keychain
+*.keychain-db

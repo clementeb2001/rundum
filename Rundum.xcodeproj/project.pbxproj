@@ -1,2 +1,405 @@
 // !$*UTF8*$!
-{ "archiveVersion" = "1"; "classes" = {  }; "objectVersion" = "56"; "objects" = { "DFBA7AADE0868074C2861C98" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "text.xcconfig"; "path" = "Config/App.xcconfig"; "sourceTree" = "<group>"; }; "DD5DAF5FFEA25FCA0FD7FFEF" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "App/AccountViews.swift"; "sourceTree" = "<group>"; }; "C12F5893D854D90BDA4028EF" = { "isa" = "PBXBuildFile"; "fileRef" = "DD5DAF5FFEA25FCA0FD7FFEF"; }; "C18EB29EAE81942149C02254" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "App/AppState.swift"; "sourceTree" = "<group>"; }; "C460AA7673D42FED4371F270" = { "isa" = "PBXBuildFile"; "fileRef" = "C18EB29EAE81942149C02254"; }; "53F510FCE60AFC6F3D4D9DD7" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "App/CardRegistry.swift"; "sourceTree" = "<group>"; }; "8870A5A8C15829A8CA67BF7A" = { "isa" = "PBXBuildFile"; "fileRef" = "53F510FCE60AFC6F3D4D9DD7"; }; "CF4EABC66127BC221EA30BB4" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "App/CloudService.swift"; "sourceTree" = "<group>"; }; "AE8418E73EBFA59DD4BA4CC6" = { "isa" = "PBXBuildFile"; "fileRef" = "CF4EABC66127BC221EA30BB4"; }; "6D15C7CA423DE64384AAE98E" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "App/DashboardView.swift"; "sourceTree" = "<group>"; }; "035E021CC3437282F8BB50CE" = { "isa" = "PBXBuildFile"; "fileRef" = "6D15C7CA423DE64384AAE98E"; }; "915F2561276F2D99A59A863C" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "App/DeviceServices.swift"; "sourceTree" = "<group>"; }; "891735484F7127A00548EA18" = { "isa" = "PBXBuildFile"; "fileRef" = "915F2561276F2D99A59A863C"; }; "BEC02255AE53D41309B9C7A9" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "App/FamilyView.swift"; "sourceTree" = "<group>"; }; "6AA2A9906ECD77A2E8EDCE45" = { "isa" = "PBXBuildFile"; "fileRef" = "BEC02255AE53D41309B9C7A9"; }; "5436DDAA593D91628085DF2F" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "App/Language.swift"; "sourceTree" = "<group>"; }; "2415C46A110603D057E6C2FA" = { "isa" = "PBXBuildFile"; "fileRef" = "5436DDAA593D91628085DF2F"; }; "8F6F2194E19AEF080086CE1E" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "App/RundumApp.swift"; "sourceTree" = "<group>"; }; "528C981AC7F12DACAA285A0C" = { "isa" = "PBXBuildFile"; "fileRef" = "8F6F2194E19AEF080086CE1E"; }; "794CDC2D1145E96C6B308B68" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "Core/Models.swift"; "sourceTree" = "<group>"; }; "E015E5CDC9677EF88A240670" = { "isa" = "PBXBuildFile"; "fileRef" = "794CDC2D1145E96C6B308B68"; }; "025F92A5DBAF1DDA2BFDA954" = { "isa" = "PBXSourcesBuildPhase"; "buildActionMask" = "2147483647"; "files" = ("C12F5893D854D90BDA4028EF", "C460AA7673D42FED4371F270", "8870A5A8C15829A8CA67BF7A", "AE8418E73EBFA59DD4BA4CC6", "035E021CC3437282F8BB50CE", "891735484F7127A00548EA18", "6AA2A9906ECD77A2E8EDCE45", "2415C46A110603D057E6C2FA", "528C981AC7F12DACAA285A0C", "E015E5CDC9677EF88A240670"); "runOnlyForDeploymentPostprocessing" = "0"; }; "3685E330EC5277A9DD5661C6" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "folder.assetcatalog"; "path" = "App/Resources/Assets.xcassets"; "sourceTree" = "<group>"; }; "04200CFFD12D083534B07BB1" = { "isa" = "PBXBuildFile"; "fileRef" = "3685E330EC5277A9DD5661C6"; }; "600CCD1B71569232D01D110B" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "text.plist.strings"; "name" = "de"; "path" = "App/Resources/de.lproj/InfoPlist.strings"; "sourceTree" = "<group>"; }; "B858A87C07B04C4568F51B0D" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "text.plist.strings"; "name" = "fr"; "path" = "App/Resources/fr.lproj/InfoPlist.strings"; "sourceTree" = "<group>"; }; "094B0FE0E302854AF1311AFA" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "text.plist.strings"; "name" = "en"; "path" = "App/Resources/en.lproj/InfoPlist.strings"; "sourceTree" = "<group>"; }; "82792A940AEB9DBA2EEAA46C" = { "isa" = "PBXVariantGroup"; "children" = ("600CCD1B71569232D01D110B", "B858A87C07B04C4568F51B0D", "094B0FE0E302854AF1311AFA"); "name" = "InfoPlist.strings"; "sourceTree" = "<group>"; }; "57CB209A63883398F2C7E84E" = { "isa" = "PBXBuildFile"; "fileRef" = "82792A940AEB9DBA2EEAA46C"; }; "8498BC6691F72B28A9D329A3" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "text.xml"; "path" = "App/Resources/PrivacyInfo.xcprivacy"; "sourceTree" = "<group>"; }; "D51D3F0FB3DEAAEA50B70633" = { "isa" = "PBXBuildFile"; "fileRef" = "8498BC6691F72B28A9D329A3"; }; "550281147B5FD32E3E45994F" = { "isa" = "PBXResourcesBuildPhase"; "buildActionMask" = "2147483647"; "files" = ("04200CFFD12D083534B07BB1", "57CB209A63883398F2C7E84E", "D51D3F0FB3DEAAEA50B70633"); "runOnlyForDeploymentPostprocessing" = "0"; }; "0A535D87403C3A88521BDCED" = { "isa" = "PBXFileReference"; "explicitFileType" = "wrapper.application"; "path" = "Rundum.app"; "sourceTree" = "BUILT_PRODUCTS_DIR"; "includeInIndex" = "0"; }; "8B3E823EE8D97A003E8431DB" = { "isa" = "XCBuildConfiguration"; "baseConfigurationReference" = "DFBA7AADE0868074C2861C98"; "buildSettings" = { "PRODUCT_NAME" = "Rundum"; "PRODUCT_BUNDLE_IDENTIFIER" = "app.rundum.ios"; "INFOPLIST_FILE" = "Config/Info.plist"; "CODE_SIGN_ENTITLEMENTS" = "Config/App.entitlements"; "CODE_SIGN_STYLE" = "Automatic"; "SDKROOT" = "iphoneos"; "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator"; "SWIFT_OPTIMIZATION_LEVEL" = "-Onone"; "SWIFT_EMIT_LOC_STRINGS" = "YES"; "LD_RUNPATH_SEARCH_PATHS" = ("$(inherited)", "@executable_path/Frameworks"); "ENABLE_USER_SCRIPT_SANDBOXING" = "YES"; "ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon"; }; "name" = "Debug"; }; "9D123CF9AC85FA209B68DF67" = { "isa" = "XCBuildConfiguration"; "baseConfigurationReference" = "DFBA7AADE0868074C2861C98"; "buildSettings" = { "PRODUCT_NAME" = "Rundum"; "PRODUCT_BUNDLE_IDENTIFIER" = "app.rundum.ios"; "INFOPLIST_FILE" = "Config/Info.plist"; "CODE_SIGN_ENTITLEMENTS" = "Config/App.entitlements"; "CODE_SIGN_STYLE" = "Automatic"; "SDKROOT" = "iphoneos"; "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator"; "SWIFT_OPTIMIZATION_LEVEL" = "-O"; "SWIFT_EMIT_LOC_STRINGS" = "YES"; "LD_RUNPATH_SEARCH_PATHS" = ("$(inherited)", "@executable_path/Frameworks"); "ENABLE_USER_SCRIPT_SANDBOXING" = "YES"; "ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon"; }; "name" = "Release"; }; "13185A6BD0969B889B6652B0" = { "isa" = "XCConfigurationList"; "buildConfigurations" = ("8B3E823EE8D97A003E8431DB", "9D123CF9AC85FA209B68DF67"); "defaultConfigurationIsVisible" = "0"; "defaultConfigurationName" = "Release"; }; "A0AC34AA3808751894A3791E" = { "isa" = "PBXNativeTarget"; "name" = "Rundum"; "productName" = "Rundum"; "productReference" = "0A535D87403C3A88521BDCED"; "productType" = "com.apple.product-type.application"; "buildConfigurationList" = "13185A6BD0969B889B6652B0"; "buildPhases" = ("025F92A5DBAF1DDA2BFDA954", "550281147B5FD32E3E45994F", "125D1DB76C9DB381A5FF149F"); "buildRules" = (); "dependencies" = ("16883B4D41B223F124B63CE6"); }; "D8EDF12577DBD050AD5F4D1D" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "sourcecode.swift"; "path" = "Widget/RundumWidget.swift"; "sourceTree" = "<group>"; }; "74FE11E0DAC5FE565A32572A" = { "isa" = "PBXBuildFile"; "fileRef" = "D8EDF12577DBD050AD5F4D1D"; }; "EF0E1931E29BF2A2A8185509" = { "isa" = "PBXSourcesBuildPhase"; "buildActionMask" = "2147483647"; "files" = ("74FE11E0DAC5FE565A32572A"); "runOnlyForDeploymentPostprocessing" = "0"; }; "26CC2B66BA10849B794520D4" = { "isa" = "PBXFileReference"; "lastKnownFileType" = "text.xml"; "path" = "App/Resources/PrivacyInfo.xcprivacy"; "sourceTree" = "<group>"; }; "529BF87D9BC68632A3B476A7" = { "isa" = "PBXBuildFile"; "fileRef" = "26CC2B66BA10849B794520D4"; }; "2F8290508E5356AFE12A048A" = { "isa" = "PBXResourcesBuildPhase"; "buildActionMask" = "2147483647"; "files" = ("529BF87D9BC68632A3B476A7"); "runOnlyForDeploymentPostprocessing" = "0"; }; "B831D1796ED3C0EA907DD342" = { "isa" = "PBXFileReference"; "explicitFileType" = "wrapper.app-extension"; "path" = "RundumWidget.appex"; "sourceTree" = "BUILT_PRODUCTS_DIR"; "includeInIndex" = "0"; }; "5CC172F26E38CBDCAAA3D3EE" = { "isa" = "XCBuildConfiguration"; "baseConfigurationReference" = "DFBA7AADE0868074C2861C98"; "buildSettings" = { "PRODUCT_NAME" = "RundumWidget"; "PRODUCT_BUNDLE_IDENTIFIER" = "app.rundum.ios.widget"; "INFOPLIST_FILE" = "Config/Widget-Info.plist"; "CODE_SIGN_ENTITLEMENTS" = "Config/Widget.entitlements"; "CODE_SIGN_STYLE" = "Automatic"; "SDKROOT" = "iphoneos"; "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator"; "SWIFT_OPTIMIZATION_LEVEL" = "-Onone"; "SWIFT_EMIT_LOC_STRINGS" = "YES"; "LD_RUNPATH_SEARCH_PATHS" = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks"); "ENABLE_USER_SCRIPT_SANDBOXING" = "YES"; "APPLICATION_EXTENSION_API_ONLY" = "YES"; "SKIP_INSTALL" = "YES"; }; "name" = "Debug"; }; "C2F3B5ABBB42A23152127D0D" = { "isa" = "XCBuildConfiguration"; "baseConfigurationReference" = "DFBA7AADE0868074C2861C98"; "buildSettings" = { "PRODUCT_NAME" = "RundumWidget"; "PRODUCT_BUNDLE_IDENTIFIER" = "app.rundum.ios.widget"; "INFOPLIST_FILE" = "Config/Widget-Info.plist"; "CODE_SIGN_ENTITLEMENTS" = "Config/Widget.entitlements"; "CODE_SIGN_STYLE" = "Automatic"; "SDKROOT" = "iphoneos"; "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator"; "SWIFT_OPTIMIZATION_LEVEL" = "-O"; "SWIFT_EMIT_LOC_STRINGS" = "YES"; "LD_RUNPATH_SEARCH_PATHS" = ("$(inherited)", "@executable_path/Frameworks", "@executable_path/../../Frameworks"); "ENABLE_USER_SCRIPT_SANDBOXING" = "YES"; "APPLICATION_EXTENSION_API_ONLY" = "YES"; "SKIP_INSTALL" = "YES"; }; "name" = "Release"; }; "CE4A132563EAAA931D0D9AF2" = { "isa" = "XCConfigurationList"; "buildConfigurations" = ("5CC172F26E38CBDCAAA3D3EE", "C2F3B5ABBB42A23152127D0D"); "defaultConfigurationIsVisible" = "0"; "defaultConfigurationName" = "Release"; }; "6418B51897332505C1575A80" = { "isa" = "PBXNativeTarget"; "name" = "RundumWidget"; "productName" = "RundumWidget"; "productReference" = "B831D1796ED3C0EA907DD342"; "productType" = "com.apple.product-type.app-extension"; "buildConfigurationList" = "CE4A132563EAAA931D0D9AF2"; "buildPhases" = ("EF0E1931E29BF2A2A8185509", "2F8290508E5356AFE12A048A"); "buildRules" = (); "dependencies" = (); }; "F074B5D4D4B72F6C3B621CD7" = { "isa" = "PBXContainerItemProxy"; "containerPortal" = "98F54143AB4E86B28C3AFEE0"; "proxyType" = "1"; "remoteGlobalIDString" = "6418B51897332505C1575A80"; "remoteInfo" = "RundumWidget"; }; "16883B4D41B223F124B63CE6" = { "isa" = "PBXTargetDependency"; "target" = "6418B51897332505C1575A80"; "targetProxy" = "F074B5D4D4B72F6C3B621CD7"; }; "B0549C7360EF5E3D3488BF94" = { "isa" = "PBXBuildFile"; "fileRef" = "B831D1796ED3C0EA907DD342"; "settings" = { "ATTRIBUTES" = ("RemoveHeadersOnCopy"); }; }; "125D1DB76C9DB381A5FF149F" = { "isa" = "PBXCopyFilesBuildPhase"; "buildActionMask" = "2147483647"; "dstPath" = ""; "dstSubfolderSpec" = "13"; "files" = ("B0549C7360EF5E3D3488BF94"); "name" = "Embed App Extensions"; "runOnlyForDeploymentPostprocessing" = "0"; }; "FBDC4F23F93125BBEEAE800C" = { "isa" = "PBXGroup"; "children" = ("0A535D87403C3A88521BDCED", "B831D1796ED3C0EA907DD342"); "name" = "Products"; "sourceTree" = "<group>"; }; "B28B7AF69320201D1CF206EB" = { "isa" = "PBXGroup"; "children" = ("DFBA7AADE0868074C2861C98", "DD5DAF5FFEA25FCA0FD7FFEF", "C18EB29EAE81942149C02254", "53F510FCE60AFC6F3D4D9DD7", "CF4EABC66127BC221EA30BB4", "6D15C7CA423DE64384AAE98E", "915F2561276F2D99A59A863C", "BEC02255AE53D41309B9C7A9", "5436DDAA593D91628085DF2F", "8F6F2194E19AEF080086CE1E", "794CDC2D1145E96C6B308B68", "3685E330EC5277A9DD5661C6", "82792A940AEB9DBA2EEAA46C", "8498BC6691F72B28A9D329A3", "D8EDF12577DBD050AD5F4D1D", "26CC2B66BA10849B794520D4", "FBDC4F23F93125BBEEAE800C"); "sourceTree" = "<group>"; }; "89E1FD6268CC0F221A2BE178" = { "isa" = "XCBuildConfiguration"; "buildSettings" = { "CLANG_ENABLE_MODULES" = "YES"; "SWIFT_VERSION" = "5.0"; "IPHONEOS_DEPLOYMENT_TARGET" = "16.0"; }; "name" = "Debug"; }; "E6DE6C99132752C914FEF632" = { "isa" = "XCBuildConfiguration"; "buildSettings" = { "CLANG_ENABLE_MODULES" = "YES"; "SWIFT_VERSION" = "5.0"; "IPHONEOS_DEPLOYMENT_TARGET" = "16.0"; }; "name" = "Release"; }; "862894B703A6DEDF96A9DD6C" = { "isa" = "XCConfigurationList"; "buildConfigurations" = ("89E1FD6268CC0F221A2BE178", "E6DE6C99132752C914FEF632"); "defaultConfigurationIsVisible" = "0"; "defaultConfigurationName" = "Release"; }; "98F54143AB4E86B28C3AFEE0" = { "isa" = "PBXProject"; "attributes" = { "LastUpgradeCheck" = "1600"; "BuildIndependentTargetsInParallel" = "YES"; }; "buildConfigurationList" = "862894B703A6DEDF96A9DD6C"; "compatibilityVersion" = "Xcode 14.0"; "developmentRegion" = "de"; "hasScannedForEncodings" = "0"; "knownRegions" = ("de", "en", "fr", "Base"); "mainGroup" = "B28B7AF69320201D1CF206EB"; "productRefGroup" = "FBDC4F23F93125BBEEAE800C"; "projectDirPath" = ""; "projectRoot" = ""; "targets" = ("A0AC34AA3808751894A3791E", "6418B51897332505C1575A80"); }; }; "rootObject" = "98F54143AB4E86B28C3AFEE0"; }
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		035E021CC3437282F8BB50CE /* App/DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D15C7CA423DE64384AAE98E /* App/DashboardView.swift */; };
+		04200CFFD12D083534B07BB1 /* App/Resources/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3685E330EC5277A9DD5661C6 /* App/Resources/Assets.xcassets */; };
+		2415C46A110603D057E6C2FA /* App/Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5436DDAA593D91628085DF2F /* App/Language.swift */; };
+		4CEBA543CF5411E084C63461 /* App/LegalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF42A453F3E438C750ABFA1C /* App/LegalView.swift */; };
+		528C981AC7F12DACAA285A0C /* App/RundumApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6F2194E19AEF080086CE1E /* App/RundumApp.swift */; };
+		529BF87D9BC68632A3B476A7 /* App/Resources/PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 26CC2B66BA10849B794520D4 /* App/Resources/PrivacyInfo.xcprivacy */; };
+		57CB209A63883398F2C7E84E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 82792A940AEB9DBA2EEAA46C /* InfoPlist.strings */; };
+		6229BD92D01B275FF520C4D7 /* App/WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B26CE02678ED8BE9B5A6EFF /* App/WeatherService.swift */; };
+		6AA2A9906ECD77A2E8EDCE45 /* App/FamilyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC02255AE53D41309B9C7A9 /* App/FamilyView.swift */; };
+		74FE11E0DAC5FE565A32572A /* Widget/RundumWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8EDF12577DBD050AD5F4D1D /* Widget/RundumWidget.swift */; };
+		8870A5A8C15829A8CA67BF7A /* App/CardRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F510FCE60AFC6F3D4D9DD7 /* App/CardRegistry.swift */; };
+		891735484F7127A00548EA18 /* App/DeviceServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915F2561276F2D99A59A863C /* App/DeviceServices.swift */; };
+		AE8418E73EBFA59DD4BA4CC6 /* App/CloudService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF4EABC66127BC221EA30BB4 /* App/CloudService.swift */; };
+		B0549C7360EF5E3D3488BF94 /* RundumWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B831D1796ED3C0EA907DD342 /* RundumWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C12F5893D854D90BDA4028EF /* App/AccountViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5DAF5FFEA25FCA0FD7FFEF /* App/AccountViews.swift */; };
+		C460AA7673D42FED4371F270 /* App/AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18EB29EAE81942149C02254 /* App/AppState.swift */; };
+		D51D3F0FB3DEAAEA50B70633 /* App/Resources/PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8498BC6691F72B28A9D329A3 /* App/Resources/PrivacyInfo.xcprivacy */; };
+		E015E5CDC9677EF88A240670 /* Core/Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794CDC2D1145E96C6B308B68 /* Core/Models.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F074B5D4D4B72F6C3B621CD7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6418B51897332505C1575A80;
+			remoteInfo = RundumWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		125D1DB76C9DB381A5FF149F /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B0549C7360EF5E3D3488BF94 /* RundumWidget.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		094B0FE0E302854AF1311AFA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = App/Resources/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		0A535D87403C3A88521BDCED /* Rundum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rundum.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		26CC2B66BA10849B794520D4 /* App/Resources/PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = App/Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2721CA1AC4587BDF99F89E71 /* Config/Rundum.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Config/Rundum.storekit; sourceTree = "<group>"; };
+		3685E330EC5277A9DD5661C6 /* App/Resources/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = App/Resources/Assets.xcassets; sourceTree = "<group>"; };
+		53F510FCE60AFC6F3D4D9DD7 /* App/CardRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/CardRegistry.swift; sourceTree = "<group>"; };
+		5436DDAA593D91628085DF2F /* App/Language.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/Language.swift; sourceTree = "<group>"; };
+		600CCD1B71569232D01D110B /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = App/Resources/de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		6D15C7CA423DE64384AAE98E /* App/DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/DashboardView.swift; sourceTree = "<group>"; };
+		794CDC2D1145E96C6B308B68 /* Core/Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Models.swift; sourceTree = "<group>"; };
+		8498BC6691F72B28A9D329A3 /* App/Resources/PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = App/Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		8B26CE02678ED8BE9B5A6EFF /* App/WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/WeatherService.swift; sourceTree = "<group>"; };
+		8F6F2194E19AEF080086CE1E /* App/RundumApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/RundumApp.swift; sourceTree = "<group>"; };
+		915F2561276F2D99A59A863C /* App/DeviceServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/DeviceServices.swift; sourceTree = "<group>"; };
+		B831D1796ED3C0EA907DD342 /* RundumWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RundumWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B858A87C07B04C4568F51B0D /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = App/Resources/fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		BEC02255AE53D41309B9C7A9 /* App/FamilyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/FamilyView.swift; sourceTree = "<group>"; };
+		C18EB29EAE81942149C02254 /* App/AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppState.swift; sourceTree = "<group>"; };
+		CF4EABC66127BC221EA30BB4 /* App/CloudService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/CloudService.swift; sourceTree = "<group>"; };
+		D8EDF12577DBD050AD5F4D1D /* Widget/RundumWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widget/RundumWidget.swift; sourceTree = "<group>"; };
+		DD5DAF5FFEA25FCA0FD7FFEF /* App/AccountViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AccountViews.swift; sourceTree = "<group>"; };
+		DF42A453F3E438C750ABFA1C /* App/LegalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/LegalView.swift; sourceTree = "<group>"; };
+		DFBA7AADE0868074C2861C98 /* Config/App.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/App.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		B28B7AF69320201D1CF206EB = {
+			isa = PBXGroup;
+			children = (
+				DFBA7AADE0868074C2861C98 /* Config/App.xcconfig */,
+				2721CA1AC4587BDF99F89E71 /* Config/Rundum.storekit */,
+				DD5DAF5FFEA25FCA0FD7FFEF /* App/AccountViews.swift */,
+				C18EB29EAE81942149C02254 /* App/AppState.swift */,
+				53F510FCE60AFC6F3D4D9DD7 /* App/CardRegistry.swift */,
+				CF4EABC66127BC221EA30BB4 /* App/CloudService.swift */,
+				6D15C7CA423DE64384AAE98E /* App/DashboardView.swift */,
+				915F2561276F2D99A59A863C /* App/DeviceServices.swift */,
+				BEC02255AE53D41309B9C7A9 /* App/FamilyView.swift */,
+				5436DDAA593D91628085DF2F /* App/Language.swift */,
+				DF42A453F3E438C750ABFA1C /* App/LegalView.swift */,
+				8F6F2194E19AEF080086CE1E /* App/RundumApp.swift */,
+				8B26CE02678ED8BE9B5A6EFF /* App/WeatherService.swift */,
+				794CDC2D1145E96C6B308B68 /* Core/Models.swift */,
+				3685E330EC5277A9DD5661C6 /* App/Resources/Assets.xcassets */,
+				82792A940AEB9DBA2EEAA46C /* InfoPlist.strings */,
+				8498BC6691F72B28A9D329A3 /* App/Resources/PrivacyInfo.xcprivacy */,
+				D8EDF12577DBD050AD5F4D1D /* Widget/RundumWidget.swift */,
+				26CC2B66BA10849B794520D4 /* App/Resources/PrivacyInfo.xcprivacy */,
+				FBDC4F23F93125BBEEAE800C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FBDC4F23F93125BBEEAE800C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0A535D87403C3A88521BDCED /* Rundum.app */,
+				B831D1796ED3C0EA907DD342 /* RundumWidget.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6418B51897332505C1575A80 /* RundumWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE4A132563EAAA931D0D9AF2 /* Build configuration list for PBXNativeTarget "RundumWidget" */;
+			buildPhases = (
+				EF0E1931E29BF2A2A8185509 /* Sources */,
+				2F8290508E5356AFE12A048A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RundumWidget;
+			productName = RundumWidget;
+			productReference = B831D1796ED3C0EA907DD342 /* RundumWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		A0AC34AA3808751894A3791E /* Rundum */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 13185A6BD0969B889B6652B0 /* Build configuration list for PBXNativeTarget "Rundum" */;
+			buildPhases = (
+				025F92A5DBAF1DDA2BFDA954 /* Sources */,
+				550281147B5FD32E3E45994F /* Resources */,
+				125D1DB76C9DB381A5FF149F /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				16883B4D41B223F124B63CE6 /* PBXTargetDependency */,
+			);
+			name = Rundum;
+			productName = Rundum;
+			productReference = 0A535D87403C3A88521BDCED /* Rundum.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		98F54143AB4E86B28C3AFEE0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = 862894B703A6DEDF96A9DD6C /* Build configuration list for PBXProject "Rundum" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = de;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				de,
+				en,
+				fr,
+				Base,
+			);
+			mainGroup = B28B7AF69320201D1CF206EB;
+			productRefGroup = FBDC4F23F93125BBEEAE800C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A0AC34AA3808751894A3791E /* Rundum */,
+				6418B51897332505C1575A80 /* RundumWidget */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2F8290508E5356AFE12A048A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				529BF87D9BC68632A3B476A7 /* App/Resources/PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		550281147B5FD32E3E45994F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				04200CFFD12D083534B07BB1 /* App/Resources/Assets.xcassets in Resources */,
+				57CB209A63883398F2C7E84E /* InfoPlist.strings in Resources */,
+				D51D3F0FB3DEAAEA50B70633 /* App/Resources/PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		025F92A5DBAF1DDA2BFDA954 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C12F5893D854D90BDA4028EF /* App/AccountViews.swift in Sources */,
+				C460AA7673D42FED4371F270 /* App/AppState.swift in Sources */,
+				8870A5A8C15829A8CA67BF7A /* App/CardRegistry.swift in Sources */,
+				AE8418E73EBFA59DD4BA4CC6 /* App/CloudService.swift in Sources */,
+				035E021CC3437282F8BB50CE /* App/DashboardView.swift in Sources */,
+				891735484F7127A00548EA18 /* App/DeviceServices.swift in Sources */,
+				6AA2A9906ECD77A2E8EDCE45 /* App/FamilyView.swift in Sources */,
+				2415C46A110603D057E6C2FA /* App/Language.swift in Sources */,
+				4CEBA543CF5411E084C63461 /* App/LegalView.swift in Sources */,
+				528C981AC7F12DACAA285A0C /* App/RundumApp.swift in Sources */,
+				6229BD92D01B275FF520C4D7 /* App/WeatherService.swift in Sources */,
+				E015E5CDC9677EF88A240670 /* Core/Models.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EF0E1931E29BF2A2A8185509 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				74FE11E0DAC5FE565A32572A /* Widget/RundumWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		16883B4D41B223F124B63CE6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6418B51897332505C1575A80 /* RundumWidget */;
+			targetProxy = F074B5D4D4B72F6C3B621CD7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		82792A940AEB9DBA2EEAA46C /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				600CCD1B71569232D01D110B /* de */,
+				B858A87C07B04C4568F51B0D /* fr */,
+				094B0FE0E302854AF1311AFA /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		5CC172F26E38CBDCAAA3D3EE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DFBA7AADE0868074C2861C98 /* Config/App.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/Widget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V4X26D42YH;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				INFOPLIST_FILE = "Config/Widget-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(WIDGET_BUNDLE_ID)";
+				PRODUCT_NAME = RundumWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		89E1FD6268CC0F221A2BE178 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		8B3E823EE8D97A003E8431DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DFBA7AADE0868074C2861C98 /* Config/App.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/App.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V4X26D42YH;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				INFOPLIST_FILE = Config/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID)";
+				PRODUCT_NAME = Rundum;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		9D123CF9AC85FA209B68DF67 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DFBA7AADE0868074C2861C98 /* Config/App.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/App.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V4X26D42YH;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				INFOPLIST_FILE = Config/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_ID)";
+				PRODUCT_NAME = Rundum;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		C2F3B5ABBB42A23152127D0D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DFBA7AADE0868074C2861C98 /* Config/App.xcconfig */;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/Widget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V4X26D42YH;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				INFOPLIST_FILE = "Config/Widget-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "$(WIDGET_BUNDLE_ID)";
+				PRODUCT_NAME = RundumWidget;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		E6DE6C99132752C914FEF632 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		13185A6BD0969B889B6652B0 /* Build configuration list for PBXNativeTarget "Rundum" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B3E823EE8D97A003E8431DB /* Debug */,
+				9D123CF9AC85FA209B68DF67 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		862894B703A6DEDF96A9DD6C /* Build configuration list for PBXProject "Rundum" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				89E1FD6268CC0F221A2BE178 /* Debug */,
+				E6DE6C99132752C914FEF632 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CE4A132563EAAA931D0D9AF2 /* Build configuration list for PBXNativeTarget "RundumWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5CC172F26E38CBDCAAA3D3EE /* Debug */,
+				C2F3B5ABBB42A23152127D0D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+}

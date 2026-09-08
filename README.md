@@ -1,5 +1,7 @@
 # Rundum
 
+**Aktueller persönlicher Teststand:** Wetter mit Apple WeatherKit ist als sechste Dashboard-Karte integriert. Ortsauswahl, optionale einmalige Standortabfrage, Stunden-/Tagesvorschau und Apple-Attribution sind enthalten. Impressum, Datenschutz und Nutzungsbedingungen sind in den Einstellungen als **Testfassungen** erreichbar; Betreiberangaben können für den privaten Test noch fehlen. Siehe **[iPhone-Testanleitung](docs/IPHONE_TEST.md)**. Kein Supabase-Projekt ist eingerichtet; Cloud-Funktionen sind deshalb noch nicht betriebsbereit.
+
 Native SwiftUI-App für iOS 16+: persönlicher Tagesüberblick, modulare Dashboard-Karten, lokale Apple-Health-Daten und gemeinsame Kalender. Deutsch, Französisch und Englisch. Keine Drittanbieter-SDKs erforderlich.
 
 ## Starten
@@ -12,7 +14,7 @@ Das Xcode-Projekt und das App-Icon sind bereits enthalten. Nach Änderungen an d
 
 ## Funktionsumfang
 
-- Geführte Kartenauswahl ohne Konto, danach anpassbares Dashboard mit fünf Karten: Kalender, Schritte, Schlaf, Puls, Workouts.
+- Geführte Kartenauswahl ohne Konto, danach anpassbares Dashboard mit sechs Karten: Kalender, Schritte, Schlaf, Puls, Workouts und Wetter.
 - Karten aktivieren/deaktivieren; Drag & Drop im Dashboard und sortierbare Liste mit System-Bedienelementen. Freemium-Limit von zwei sichtbaren Karten; zusätzliche Karten und drei Größen bei verifiziertem StoreKit-Abo.
 - EventKit liest ausgewählte iOS-Kalender für die nächsten sieben Tage. Google-Kalender müssen zuvor in iOS eingebunden sein. Private Termine verlassen das Gerät nicht, außer dem ausdrücklich aktivierten lokalen Widget-Snapshot.
 - HealthKit liest Schritte, letzte Nacht, heutige Herzfrequenz und Trainingsminuten. Überlappende Schlafquellen werden zusammengeführt. Keine Health-Daten im Backend, in Dateien oder im Homescreen-Widget. Keine Datenfreigabe an Familienmitglieder.
@@ -33,6 +35,12 @@ Das Xcode-Projekt und das App-Icon sind bereits enthalten. Nach Änderungen an d
 Die Cloud ist im ausgelieferten Projekt noch nicht mit einem echten Dienst verbunden. Ohne diese Konfiguration erklärt die App den Zustand und funktioniert lokal weiter.
 
 ## Abonnements
+
+### Pro kostenlos im Simulator testen
+
+Öffne **Rundum.xcodeproj**, nicht `Package.swift`. Wähle das Schema **Rundum** und einen iPhone-Simulator und starte mit **⌘R** aus Xcode. Im Run-Schema ist `Config/Rundum.storekit` bereits als lokale StoreKit-Konfiguration hinterlegt. Sie enthält `app.rundum.pro.monthly` für 3,99 EUR pro Monat, Storefront Luxemburg, ohne App-Store-Connect-Anbindung.
+
+Öffne in der App **Einstellungen → Rundum Pro** und bestätige den lokalen Testkauf. Es wird kein echtes Geld abgebucht. Danach sind alle fünf Karten und zusätzliche Größen verfügbar. Testtransaktionen kannst du in Xcode unter **Debug → StoreKit → Manage Transactions** verwalten. Beim normalen Start per `simctl launch` wird die Xcode-Schemakonfiguration nicht automatisch aktiviert; für diese Testkäufe daher aus Xcode starten. Die Testdatei ist keine App-Ressource und verändert das Verhalten einer veröffentlichten App nicht.
 
 StoreKit 2 ist eingebaut: Produkt laden, Kauf, verifizierte Entitlements, Wiederherstellen und Transaktionsupdates. Produkt-ID: `app.rundum.pro.monthly`, überschreibbar in `Local.xcconfig`. Produkt, monatliche Laufzeit, Preis und Verfügbarkeit müssen in App Store Connect eingerichtet werden. Die App zeigt den tatsächlichen StoreKit-Preis an; ohne Produkt ist kein Kauf möglich.
 

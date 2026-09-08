@@ -44,6 +44,14 @@ struct SettingsView: View {
                     Button(state.copy("iOS-Einstellungen öffnen", "Ouvrir les réglages iOS", "Open iOS settings")) { if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) } }
                 }
                 Section { Button { pro = true } label: { HStack { Label("Rundum Pro", systemImage: "sparkles"); Spacer(); if purchases.isPro { Image(systemName: "checkmark.seal.fill") } } } }
+                Section(state.copy("Wetter", "Météo", "Weather")) {
+                    NavigationLink { WeatherLocationView() } label: { Label(state.copy("Wetterort auswählen", "Choisir le lieu météo", "Choose weather location"), systemImage: "cloud.sun") }
+                }
+                Section(state.copy("Rechtliches und Kontakt", "Informations légales et contact", "Legal and contact")) {
+                    ForEach(LegalPage.allCases) { page in NavigationLink(page.title(state.copy)) { LegalView(page: page) } }
+                    if let email = OperatorDetails.value("SUPPORT_EMAIL"), let url = URL(string: "mailto:" + email) { Link(state.copy("Support kontaktieren", "Contacter l’assistance", "Contact support"), destination: url) }
+                    Text(state.copy("Persönliche Testversion. Rechtstexte und Betreiberangaben werden vor Veröffentlichung vervollständigt.", "Version de test personnelle. Textes juridiques et coordonnées seront complétés avant publication.", "Personal test version. Legal text and operator details will be completed before publication.")).font(.footnote).foregroundStyle(.secondary)
+                }
                 Section { Text("Rundum · 1.0").font(.footnote).foregroundStyle(.secondary) }
             }.navigationTitle(state.copy.settings)
                 .sheet(isPresented: $auth) { AuthView() }.sheet(isPresented: $pro) { ProView() }
@@ -73,6 +81,7 @@ struct AuthView: View {
                     Text(state.copy("Deine Karten und gemeinsame Kalender werden synchronisiert. Gesundheitsdaten bleiben lokal.", "Tes cartes et calendriers partagés sont synchronisés. Les données de santé restent locales.", "Your cards and shared calendars sync. Health data stays local."))
                 }
                 if cloud.configured {
+                    Section { NavigationLink(LegalPage.privacy.title(state.copy)) { LegalView(page: .privacy) }; NavigationLink(LegalPage.terms.title(state.copy)) { LegalView(page: .terms) } }
                     Section {
                         TextField("E-Mail", text: $email).textContentType(.emailAddress).keyboardType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled()
                         SecureField(state.copy("Passwort", "Mot de passe", "Password"), text: $password).textContentType(register ? .newPassword : .password)

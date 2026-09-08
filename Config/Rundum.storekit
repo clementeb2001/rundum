@@ -1,0 +1,97 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "A7E71D6C-8C9E-4D91-98ED-0D2D17816913",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_billingIssuesEnabled" : false,
+    "_disableDialogs" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "de",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "LUX",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "921B1497",
+      "localizations" : [
+
+      ],
+      "name" : "Rundum Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "3.99",
+              "displayPrice" : "3.99",
+              "internalID" : "5883240D",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "3.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "8921736510",
+          "introductoryOffers" : [
+
+          ],
+          "localizations" : [
+            {
+              "description" : "Alle Dashboard-Karten und zusätzliche Kartengrößen.",
+              "displayName" : "Rundum Pro",
+              "locale" : "de"
+            },
+            {
+              "description" : "Toutes les cartes et des tailles supplémentaires.",
+              "displayName" : "Rundum Pro",
+              "locale" : "fr"
+            },
+            {
+              "description" : "All dashboard cards and additional sizes.",
+              "displayName" : "Rundum Pro",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "app.rundum.pro.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Rundum Pro Monthly",
+          "subscriptionGroupID" : "921B1497",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 5,
+    "minor" : 0
+  }
+}

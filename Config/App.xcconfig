@@ -9,4 +9,9 @@ PRO_PRODUCT_ID = app.rundum.pro.monthly
 SUPABASE_URL =
 SUPABASE_ANON_KEY =
 DEVELOPMENT_TEAM =
+APP_BUNDLE_ID = app.rundum.ios
+WIDGET_BUNDLE_ID = app.rundum.ios.widget
+OPERATOR_NAME =
+OPERATOR_ADDRESS =
+SUPPORT_EMAIL =
 #include? "Local.xcconfig"

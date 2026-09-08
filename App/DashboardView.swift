@@ -7,6 +7,7 @@ struct DashboardView: View {
     @EnvironmentObject var health: HealthService
     @EnvironmentObject var cloud: CloudService
     @EnvironmentObject var purchases: PurchaseService
+    @EnvironmentObject var weather: WeatherModel
     @State private var library = false
     @State private var dragging: CardKind?
     private var allEvents: [CalendarItem] {
@@ -49,6 +50,7 @@ struct DashboardView: View {
             }.background(Palette.paper).toolbar(.hidden, for: .navigationBar)
                 .sheet(isPresented: $library) { CardLibraryView() }
                 .refreshable {
+                    if state.configuration.visibleCards(isPro: purchases.isPro).contains(where: { $0.id == .weather }) { await weather.refresh(force: true) }
                     calendar.load(); await health.load(); await state.synchronize(cloud: cloud)
                     if cloud.session != nil { do { try await cloud.loadCalendars() } catch { cloud.error = error.localizedDescription } }
                     WidgetSnapshot.publish(cards: state.configuration.visibleCards(isPro: purchases.isPro), events: calendar.events, copy: state.copy)
