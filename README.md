@@ -1,0 +1,76 @@
+# Rundum
+
+Native SwiftUI-App für iOS 16+: persönlicher Tagesüberblick, modulare Dashboard-Karten, lokale Apple-Health-Daten und gemeinsame Kalender. Deutsch, Französisch und Englisch. Keine Drittanbieter-SDKs erforderlich.
+
+## Starten
+
+1. `Rundum.xcodeproj` in Xcode öffnen.
+2. Scheme **Rundum**, iPhone-Simulator auswählen und ▶ drücken. Das lokale Dashboard funktioniert ohne Cloud-Konfiguration. HealthKit benötigt für realistische Daten ein iPhone mit Apple Health.
+3. Für ein echtes iPhone ein eigenes Signing-Team sowie eindeutige Bundle-IDs für App und Widget einstellen. HealthKit für die App und dieselbe App Group für beide Targets aktivieren.
+
+Das Xcode-Projekt und das App-Icon sind bereits enthalten. Nach Änderungen an der Dateistruktur kann es ohne zusätzliche Pakete mit `python3 scripts/generate_project.py` neu erzeugt werden. Änderungen an Target-Einstellungen dann auch im Generator übernehmen. Das originale App-Icon wird mit `swift scripts/generate_icon.swift` erzeugt.
+
+## Funktionsumfang
+
+- Geführte Kartenauswahl ohne Konto, danach anpassbares Dashboard mit fünf Karten: Kalender, Schritte, Schlaf, Puls, Workouts.
+- Karten aktivieren/deaktivieren; Drag & Drop im Dashboard und sortierbare Liste mit System-Bedienelementen. Freemium-Limit von zwei sichtbaren Karten; zusätzliche Karten und drei Größen bei verifiziertem StoreKit-Abo.
+- EventKit liest ausgewählte iOS-Kalender für die nächsten sieben Tage. Google-Kalender müssen zuvor in iOS eingebunden sein. Private Termine verlassen das Gerät nicht, außer dem ausdrücklich aktivierten lokalen Widget-Snapshot.
+- HealthKit liest Schritte, letzte Nacht, heutige Herzfrequenz und Trainingsminuten. Überlappende Schlafquellen werden zusammengeführt. Keine Health-Daten im Backend, in Dateien oder im Homescreen-Widget. Keine Datenfreigabe an Familienmitglieder.
+- Lokale, pro Konto getrennte Dashboard-Konfiguration; Cloud-Sync bei Änderungen, App-Aktivierung und manuellem Aktualisieren. Einfaches Last-write-wins für vollständige Layouts; Offline-Layouts bleiben erhalten.
+- Supabase-E-Mail/Passwort-Anmeldung, E-Mail-Bestätigung, Keychain-Sitzung, Token-Erneuerung, Abmeldung und Kontolöschung.
+- Eigenständige gemeinsame Rundum-Kalender: erstellen, per einmaligem Code beitreten, Termine hinzufügen/bearbeiten/löschen, Kalender verlassen/löschen. Einladungen laufen nach sieben Tagen ab. RLS trennt Konten und Mitgliedschaften; nur Ersteller oder Kalendereigentümer dürfen Termine ändern/löschen.
+- WidgetKit-Erweiterung für kleine/mittlere Homescreen-Widgets. Nächster privater Termin nur nach separater Zustimmung in Einstellungen; veraltete Termine werden ausgeblendet.
+- Semantische Schriftgrößen, Dynamic Type, Systemkomponenten und VoiceOver-Beschriftungen. Für tatsächliche Barrierefreiheit steht die Geräteprüfung noch aus.
+
+## Cloud einrichten
+
+1. Ein eigenes Supabase-Projekt anlegen (für die gewünschte EU-Datenhaltung eine passende Region wählen).
+2. `Backend/001_initial.sql` einmal in einer neuen Datenbank ausführen. Sie richtet Tabellen, RLS, Berechtigungen und geschützte RPCs ein. Bei bestehenden Daten zuerst eine eigene Migration planen.
+3. E-Mail/Passwort-Auth, E-Mail-Bestätigung, Versand und Rate Limits im Projekt konfigurieren. Der Anmeldevorgang verwendet keine frei erfundenen Zugangsdaten.
+4. `Config/Local.xcconfig.example` nach `Config/Local.xcconfig` kopieren und Projekt-URL sowie **öffentlichen anon/publishable key** eintragen. Niemals `service_role` in einer App verwenden. `Local.xcconfig` ist von Git ausgeschlossen.
+5. Mit zwei Testkonten Anmeldung, Einladung, RLS, Kontowechsel, Offline-Sync und Löschung prüfen. Das bereitgestellte `Backend/access_checks.sql` enthält zusätzliche transaktionale SQL-Prüfungen für eine isolierte Testdatenbank.
+
+Die Cloud ist im ausgelieferten Projekt noch nicht mit einem echten Dienst verbunden. Ohne diese Konfiguration erklärt die App den Zustand und funktioniert lokal weiter.
+
+## Abonnements
+
+StoreKit 2 ist eingebaut: Produkt laden, Kauf, verifizierte Entitlements, Wiederherstellen und Transaktionsupdates. Produkt-ID: `app.rundum.pro.monthly`, überschreibbar in `Local.xcconfig`. Produkt, monatliche Laufzeit, Preis und Verfügbarkeit müssen in App Store Connect eingerichtet werden. Die App zeigt den tatsächlichen StoreKit-Preis an; ohne Produkt ist kein Kauf möglich.
+
+**Noch nicht fertig:** serverseitige App-Store-Transaktionsverifikation für unbegrenzte gemeinsame Kalender und erweiterte Gesundheits-Verlaufsanalysen. Deshalb begrenzt die Datenbank derzeit alle Konten auf einen selbst erstellten gemeinsamen Kalender; das Kaufangebot verspricht diese beiden Funktionen nicht. Einem bestehenden Kalender kann man zusätzlich per Einladung beitreten. Das ist eine dokumentierte Abweichung vom finalen Freemium-Modell des Briefings.
+
+## Architektur
+
+| Bereich | Verantwortung |
+|---|---|
+| `Core/` | Plattformunabhängige Kartenkonfiguration, stabile IDs, Kalendermodelle, Schlaf-Intervallberechnung |
+| `App/CardRegistry.swift` | Registrierung von Karten mit eigener SwiftUI-Renderfunktion |
+| `App/DeviceServices.swift` | EventKit und HealthKit, Zugriffsanfragen und lokale Abfragen |
+| `App/CloudService.swift` | Supabase REST/Auth, Keychain, gemeinsame Kalender |
+| `App/AppState.swift` | Persistenz, Sync, verifizierte StoreKit-Entitlements, Widget-Snapshot |
+| `App/*View*.swift` | Onboarding, Dashboard, Bibliothek, Familie, Konto und Einstellungen |
+| `Widget/` | Separater WidgetKit-Prozess ohne HealthKit-Zugriff |
+| `Backend/` | SQL-Schema, Datenzugriffsregeln, scoped RPCs, Zugriffstests |
+
+Eine neue Karte erhält eine stabile `CardKind(rawValue:)`-ID, eine View und einen Eintrag in `CardRegistry.plugins`. Das Dashboard rendert über die Registry. Persistenz und Sync müssen nicht angepasst werden; unbekannte Karten-IDs bleiben bei älteren App-Versionen erhalten. Titel/Icon einer neuen Karte können in `Copy.card`/`CardKind.symbol` ergänzt werden. Neue Datenquellen erhalten einen eigenen Dienst; keine Netzwerkabfragen in Views.
+
+## Prüfung
+
+```sh
+swift test
+xcodebuild -project Rundum.xcodeproj -scheme Rundum \
+  -configuration Debug -sdk iphonesimulator \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
+```
+
+Bei eingeschränkten Cache-Rechten:
+
+```sh
+CLANG_MODULE_CACHE_PATH="$PWD/build/clang-cache" \
+SWIFTPM_MODULECACHE_OVERRIDE="$PWD/build/swift-module-cache" \
+swift test --scratch-path build/core-tests --cache-path build/swift-cache --disable-sandbox
+```
+
+Siehe `docs/VALIDATION.md` für tatsächlich durchgeführte Prüfungen und `docs/ROADMAP.md` für den verbleibenden Weg bis zur Veröffentlichung. Der Quellcode ist eine erste kompilierbare Implementierung, keine bereits freigegebene App-Store-Version.
+
+In der Erstellungsumgebung war CoreSimulator nicht erreichbar: Der aktuelle Swift-Code und die Widget-Einbettung wurden erfolgreich mit `EXCLUDED_SOURCE_FILE_NAMES=Assets.xcassets ASSETCATALOG_COMPILER_APPICON_NAME=` gebaut. Der vollständige Build mit App-Icon-Asset-Katalog und die UI-Laufzeitprüfung bleiben auf einem funktionierenden Xcode zu bestätigen.
