@@ -1,5 +1,12 @@
 # Prüfprotokoll · 2026-09-08
 
+## Kartenkorrektur 2026-09-09
+
+- Kalender ohne Statistikdiagramme: Monatsraster, Tagesauswahl und Terminliste mit stabilen Farben je Kalenderquelle. Farben stellen keine aktive Partnerverknüpfung dar.
+- Puls auf „Heute“ verwendet stündliche Mittelwerte des aktuellen Tages; weitere Zeiträume bleiben in den Details verfügbar.
+- Schlaf verwendet standardmäßig einen Schlafzielring, keinen erfundenen Qualitätswert. Alte Balken-/Linieneinstellungen werden beim Laden umgestellt; Farbe, Größe und Ziel bleiben erhalten. Auch große Schlafkarten zeigen kein zusätzliches Wochendiagramm.
+- Verifiziert: zwölf Core-Tests und vier Bedienungstests auf einem frischen Simulator erfolgreich; Monatsraster im Screenshot visuell geprüft. Ein vorheriger paralleler Testlauf auf demselben Simulator war durch gegenseitige App-Neustarts gestört; der abschließende isolierte Lauf besteht vollständig. Reale Puls-/Schlafdaten und Installation dieses Standes auf dem persönlichen iPhone bleiben ungeprüft.
+
 ## Nachtrag 2026-09-09: Karten, Personalisierung und Detailseiten
 
 - Vollständiger Simulator-Build mit den neuen Karten, Swift Charts, Detailseiten und UI-Testtarget erfolgreich; auch der unsigned iPhone-Hardware-Build mit dem Schema „Rundum Device“ ist erfolgreich.

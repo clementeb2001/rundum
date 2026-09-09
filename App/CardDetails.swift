@@ -62,6 +62,9 @@ struct CardDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 PeriodControl(period: $period, date: $date, allowFuture: kind == .calendar)
+                if kind == .calendar && period != .year {
+                    CalendarMonthGrid(date: $date, events: events, color: card.accent).modifier(CardPanel(card: card))
+                }
                 if kind != .calendar && (!health.requested || !health.available) { healthAccess }
                 else if kind == .calendar && !calendar.hasAccess { calendarAccess }
                 if busy { ProgressView(state.copy("Werte werden geladen …", "Chargement des valeurs…", "Loading values…")).frame(maxWidth: .infinity).padding(30) }
@@ -72,9 +75,9 @@ struct CardDetailView: View {
                         Button(state.copy("Erneut versuchen", "Réessayer", "Try again")) { Task { await load() } }
                     }.modifier(CardPanel(card: card))
                 } else if kind == .calendar ? calendar.hasAccess || !events.isEmpty : health.requested && health.available {
-                    summaryPanel
-                    if kind == .calendar { calendarRecords }
-                    else { metricRecords }
+                    if kind == .calendar {
+                        calendarRecords
+                    } else { summaryPanel; metricRecords }
                 }
                 explanation
             }.padding(22).frame(maxWidth: 760)
@@ -85,7 +88,7 @@ struct CardDetailView: View {
             } }
             .sheet(isPresented: $customize) { CardCustomizationView(kind: kind) }
             .task(id: taskID) { await load() }
-            .onAppear { chartStyle = card.presentation == .line ? .line : .bars }
+            .onAppear { chartStyle = card.presentation == .line ? .line : .bars; if kind == .calendar { period = .month } }
             .onChange(of: phase) { phase in if phase == .active { Task { await load() } } }
             .refreshable { calendar.load(); await load() }
     }
@@ -126,12 +129,30 @@ struct CardDetailView: View {
     }
     private var calendarRecords: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text(state.copy("Termine", "Événements", "Events")).font(.title3.bold())
-            if events.isEmpty { Text(state.copy("Keine Termine in diesem Zeitraum.", "Aucun événement pour cette période.", "No events in this period.")).foregroundStyle(.secondary) }
+            Text(period == .year ? state.copy("Termine im Jahr", "Événements de l’année", "Events this year") : date.formatted(.dateTime.weekday(.wide).day().month(.wide))).font(.title3.bold())
+            if listedEvents.isEmpty { Text(state.copy("Keine Termine. Zeit für dich.", "Aucun événement. Du temps pour toi.", "No events. Time for you.")).foregroundStyle(.secondary) }
             LazyVStack(alignment: .leading, spacing: 16) {
-                ForEach(events) { event in EventRow(event: event, color: card.accent); Divider() }
+                ForEach(listedEvents) { event in
+                    HStack(alignment: .top, spacing: 12) {
+                        RoundedRectangle(cornerRadius: 3).fill(calendarSourceColor(event.source)).frame(width: 4)
+                        VStack(alignment: .leading, spacing: 7) {
+                            Text(event.title).font(.headline)
+                            if event.allDay { Text(state.copy("Ganztägig", "Toute la journée", "All day")).font(.subheadline) }
+                            else { Text(event.start, format: .dateTime.hour().minute()) + Text(" – ") + Text(event.end, format: .dateTime.hour().minute()) }
+                            Text(event.source).font(.caption).foregroundStyle(calendarSourceColor(event.source))
+                            if period == .year { Text(event.start, format: .dateTime.day().month(.wide)).font(.caption) }
+                        }
+                        Spacer(minLength: 0)
+                    }.fixedSize(horizontal: false, vertical: true).accessibilityElement(children: .combine)
+                    Divider()
+                }
             }
         }.modifier(CardPanel(card: card))
+    }
+    private var listedEvents: [CalendarItem] {
+        if period == .year { return events }
+        let day = HistoryPeriod.day.interval(containing: date)
+        return events.filter { $0.start < day.end && $0.end > day.start }
     }
     private var metricRecords: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -170,7 +191,7 @@ struct CardDetailView: View {
         VStack(alignment: .leading, spacing: 10) {
             Label(kind == .calendar ? state.copy("Aus deinen Kalendern", "Depuis tes calendriers", "From your calendars") : "Apple Health", systemImage: "lock.shield").font(.subheadline.bold())
             if kind == .calendar {
-                Text(state.copy("Vergangene Termine erscheinen, soweit sie auf dem iPhone verfügbar sind. Mehrtägige Termine zählen in jedem betroffenen Diagrammintervall. Gemeinsame Kalender zeigen nur bereits synchronisierte Termine.", "Les événements passés dépendent des données disponibles sur l’iPhone. Les événements sur plusieurs jours comptent dans chaque intervalle concerné. Les calendriers partagés affichent les événements déjà synchronisés.", "Past events depend on availability on this iPhone. Multi-day events count in each affected chart interval. Shared calendars show already-synced events only."))
+                Text(state.copy("Wähle einen Tag für deine Termine. Farben unterscheiden die Kalenderquellen. Vergangene und gemeinsame Termine erscheinen, soweit sie auf dem iPhone verfügbar oder bereits synchronisiert sind.", "Choisis un jour pour tes événements. Les couleurs distinguent les calendriers. Les événements passés et partagés dépendent des données disponibles ou déjà synchronisées.", "Choose a day to see your events. Colors distinguish calendar sources. Past and shared events depend on locally available or already synced data."))
             } else if kind == .sleep {
                 Text(state.copy("Eine Nacht läuft von 12 Uhr am Vortag bis 12 Uhr am gewählten Tag. Überlappende Schlafquellen werden zusammengeführt. Im Jahr zeigt jeder Balken den Durchschnitt der erfassten Nächte dieses Monats; fehlende Nächte werden nicht als null gerechnet.", "Une nuit va de midi la veille à midi le jour choisi. Les sources qui se chevauchent sont fusionnées. Sur l’année, chaque barre est la moyenne des nuits enregistrées du mois, sans compter les nuits absentes comme zéro.", "A night runs from noon the previous day to noon on the selected day. Overlapping sources are merged. Yearly bars average the recorded nights in each month; missing nights are not counted as zero."))
             } else if kind == .heart {
@@ -188,8 +209,9 @@ struct CardDetailView: View {
         do {
             if kind == .calendar {
                 calendar.load()
-                let local = calendar.history(in: range)
-                let shared = cloud.events.filter { $0.starts_at < range.end && $0.ends_at > range.start }.map { event in
+                let calendarRange = kind == .calendar && period != .year ? HistoryPeriod.month.interval(containing: date) : range
+                let local = calendar.history(in: calendarRange)
+                let shared = cloud.events.filter { $0.starts_at < calendarRange.end && $0.ends_at > calendarRange.start }.map { event in
                     CalendarItem(id: event.id.uuidString, title: event.title, start: event.starts_at, end: event.ends_at, allDay: false, source: cloud.calendars.first { $0.id == event.calendar_id }?.name ?? "Rundum")
                 }
                 guard !Task.isCancelled, requestID == id else { return }
@@ -200,5 +222,54 @@ struct CardDetailView: View {
                 history = result
             }
         } catch { if !Task.isCancelled, requestID == id { failure = error.localizedDescription } }
+    }
+}
+
+/// Stable colors distinguish calendar sources; they do not imply a partner is connected.
+private func calendarSourceColor(_ source: String) -> Color {
+    let colors: [Color] = [.blue, .purple, .orange, .teal, .pink, .indigo]
+    let index = source.utf8.reduce(0) { ($0 * 31 + Int($1)) % colors.count }
+    return colors[index]
+}
+
+struct CalendarMonthGrid: View {
+    @Binding var date: Date
+    let events: [CalendarItem]
+    let color: Color
+    private let calendar = Calendar.current
+    private var month: DateInterval { calendar.dateInterval(of: .month, for: date)! }
+    private var offset: Int { (calendar.component(.weekday, from: month.start) - calendar.firstWeekday + 7) % 7 }
+    private var count: Int { calendar.range(of: .day, in: .month, for: date)!.count }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text(date, format: .dateTime.month(.wide).year()).font(.title2.bold())
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 10) {
+                ForEach(0..<7, id: \.self) { index in
+                    Text(calendar.veryShortStandaloneWeekdaySymbols[(calendar.firstWeekday - 1 + index) % 7]).font(.caption).foregroundStyle(.secondary)
+                }
+                ForEach(0..<(offset + count), id: \.self) { index in
+                    if index < offset { Color.clear.frame(height: 44) }
+                    else {
+                        let day = calendar.date(byAdding: .day, value: index - offset, to: month.start)!
+                        let selected = calendar.isDate(day, inSameDayAs: date)
+                        let interval = HistoryPeriod.day.interval(containing: day)
+                        let sources = Array(Set(events.filter { $0.start < interval.end && $0.end > interval.start }.map(\.source))).sorted()
+                        Button { date = day } label: {
+                            VStack(spacing: 4) {
+                                Text(day, format: .dateTime.day()).font(.body.weight(selected || calendar.isDateInToday(day) ? .bold : .regular)).frame(width: 34, height: 34)
+                                    .background(selected ? color : .clear, in: Circle()).foregroundStyle(selected ? .white : calendar.isDateInToday(day) ? color : .primary)
+                                HStack(spacing: 2) { ForEach(Array(sources.prefix(3)), id: \.self) { source in Circle().fill(calendarSourceColor(source)).frame(width: 4, height: 4) } }.frame(height: 4)
+                            }.frame(maxWidth: .infinity, minHeight: 44)
+                        }.buttonStyle(.plain).accessibilityLabel(day.formatted(date: .complete, time: .omitted)).accessibilityAddTraits(selected ? .isSelected : [])
+                    }
+                }
+            }
+            let sources = Array(Set(events.map(\.source))).sorted()
+            if !sources.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack { ForEach(sources, id: \.self) { source in Label { Text(source) } icon: { Circle().fill(calendarSourceColor(source)).frame(width: 8, height: 8) }.font(.caption).padding(8).background(.quaternary, in: Capsule()) } }
+                }
+            }
+        }.accessibilityIdentifier("calendar-month-grid")
     }
 }

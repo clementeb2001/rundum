@@ -1,6 +1,16 @@
 import XCTest
 @testable import RundumCore
 final class CoreTests: XCTestCase {
+    func testCalendarAndSleepMigrateAwayFromDashboardCharts() throws {
+        let calendar = try JSONDecoder().decode(DashboardCard.self, from: Data(#"{"id":"calendar","presentation":"bars","tint":"pink"}"#.utf8))
+        let sleep = try JSONDecoder().decode(DashboardCard.self, from: Data(#"{"id":"sleep","presentation":"bars","goal":7.5}"#.utf8))
+        XCTAssertEqual(calendar.presentation, .agenda)
+        XCTAssertEqual(calendar.tint, .pink)
+        XCTAssertEqual(CardKind.calendar.presentations, [.agenda])
+        XCTAssertEqual(sleep.presentation, .ring)
+        XCTAssertEqual(sleep.goal, 7.5)
+        XCTAssertEqual(DashboardCard(id: .sleep).presentation, .ring)
+    }
     func testFreeLimitAndPreservedProLayout() {
         var config = DashboardConfiguration()
         XCTAssertFalse(config.setEnabled(.sleep, enabled: true, isPro: false))
@@ -30,7 +40,7 @@ final class CoreTests: XCTestCase {
         let config = try JSONDecoder().decode(DashboardConfiguration.self, from: Data(json.utf8))
         XCTAssertEqual(config.cards.map(\.id), [.sleep, .calendar])
         XCTAssertEqual(config.cards.first?.size, .large)
-        XCTAssertEqual(config.cards.first?.presentation, .bars)
+        XCTAssertEqual(config.cards.first?.presentation, .ring)
         XCTAssertEqual(config.cards.first?.goal, 8)
     }
     func testPersonalizationRoundTripAndFreeVisibility() throws {

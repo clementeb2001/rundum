@@ -31,6 +31,8 @@ final class CardFlowTests: XCTestCase {
         let periods = app.segmentedControls["history-period"]
         XCTAssertTrue(periods.waitForExistence(timeout: 5))
         periods.buttons["Monat"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["calendar-month-grid"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.segmentedControls.buttons["Balken"].exists)
         app.buttons["history-previous"].tap()
         screenshot("calendar-history")
         app.navigationBars.buttons.element(boundBy: 0).tap()

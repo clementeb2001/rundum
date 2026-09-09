@@ -202,10 +202,11 @@ struct RichMetricCardView: View {
                     else if card.presentation == .value { Image(systemName: card.id.symbol).font(.system(size: 44)).foregroundStyle(card.accent.opacity(0.25)).accessibilityHidden(true) }
                 }
                 if value == nil { Text(state.copy.missing).font(.caption).foregroundStyle(.secondary) }
-                if card.presentation == .bars || card.presentation == .line || card.size == .large {
-                    MetricChart(points: health.weekly[card.id] ?? [], card: card, compact: true, selected: .constant(nil))
-                    Text(state.copy("Diese Woche", "Cette semaine", "This week")).font(.caption2).foregroundStyle(.secondary)
+                if card.id != .sleep && (card.presentation == .bars || card.presentation == .line || card.size == .large) {
+                    MetricChart(points: card.id == .heart ? health.heartToday : health.weekly[card.id] ?? [], card: card, compact: true, selected: .constant(nil))
+                    Text(card.id == .heart ? state.copy("Heute · stündlicher Durchschnitt", "Aujourd’hui · moyenne horaire", "Today · hourly average") : state.copy("Diese Woche", "Cette semaine", "This week")).font(.caption2).foregroundStyle(.secondary)
                 }
+                if card.id == .sleep { Text(state.copy("Schlafdauer im Verhältnis zu deinem Ziel · keine Bewertung der Schlafqualität", "Durée par rapport à ton objectif · pas une évaluation de la qualité", "Duration relative to your goal · not a sleep quality score")).font(.caption).foregroundStyle(.secondary) }
                 if card.size == .large {
                     Divider()
                     Label(state.copy("Verläufe und frühere Werte ansehen", "Voir les tendances et valeurs passées", "Explore history and earlier values"), systemImage: "clock.arrow.circlepath").font(.caption).foregroundStyle(.secondary)
@@ -215,6 +216,16 @@ struct RichMetricCardView: View {
     }
     private var upcoming: [CalendarItem] { Array(events.filter { $0.end >= Date() }.prefix(card.size == .small ? 1 : card.size == .medium ? 3 : 5)) }
     @ViewBuilder private var calendarBody: some View {
+        HStack {
+            ForEach(0..<7, id: \.self) { offset in
+                let day = Calendar.current.date(byAdding: .day, value: offset, to: Date())!
+                VStack(spacing: 8) {
+                    Text(day, format: .dateTime.weekday(.narrow)).font(.caption2).foregroundStyle(.secondary)
+                    Text(day, format: .dateTime.day()).font(.subheadline.bold()).frame(width: 30, height: 30).background(offset == 0 ? card.accent : .clear, in: Circle()).foregroundStyle(offset == 0 ? .white : .primary)
+                    Circle().fill(events.contains { Calendar.current.isDate($0.start, inSameDayAs: day) } ? card.accent : .clear).frame(width: 4, height: 4)
+                }.frame(maxWidth: .infinity)
+            }
+        }
         if !calendar.hasAccess && events.isEmpty {
             Label(state.copy("Kalender verbinden", "Connecter les calendriers", "Connect calendars"), systemImage: "calendar.badge.plus").font(.title3.weight(.semibold))
             Text(state.copy("Deine Termine, an einem Ort. Tippe für Details.", "Tes événements réunis. Touche pour les détails.", "Your events in one place. Tap for details.")).font(.subheadline).foregroundStyle(.secondary)
@@ -222,16 +233,8 @@ struct RichMetricCardView: View {
             Label(state.copy("Platz für dich", "Du temps pour toi", "Room for you"), systemImage: "leaf").font(.title2.bold())
             Text(state.copy("Keine anstehenden Termine in den nächsten 7 Tagen.", "Aucun événement dans les 7 prochains jours.", "No upcoming events in the next 7 days.")).font(.subheadline).foregroundStyle(.secondary)
         } else {
-            if card.presentation == .value || card.presentation == .bars {
-                MetricHeadline(value: Double(events.count), card: card)
-                Text(state.copy("Nächste 7 Tage", "7 prochains jours", "Next 7 days")).font(.caption).foregroundStyle(.secondary)
-            }
-            if card.presentation == .bars {
-                MetricChart(points: nextDays, card: card, compact: true, selected: .constant(nil))
-            } else {
-                ForEach(card.presentation == .value ? Array(upcoming.prefix(1)) : upcoming) { event in
-                    EventRow(event: event, color: card.accent)
-                }
+            ForEach(upcoming) { event in
+                EventRow(event: event, color: card.accent)
             }
         }
     }

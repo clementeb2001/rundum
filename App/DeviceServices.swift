@@ -51,6 +51,7 @@ import HealthKit
     @Published var heart: Double?
     @Published var workoutMinutes: Double?
     @Published var heartUpdated: Date?
+    @Published var heartToday: [MetricPoint] = []
     @Published var weekly: [CardKind: [MetricPoint]] = [:]
     @Published var loading = false
     @Published var error: String?
@@ -82,7 +83,9 @@ import HealthKit
         sleep = asleep.isEmpty ? nil : SleepMath.hours(intervals: asleep.map { DateInterval(start: $0.startDate, end: $0.endDate) }, within: DateInterval(start: sleepStart, end: sleepEnd))
         let workouts = await samples(type: HKObjectType.workoutType(), start: start, end: now)
         workoutMinutes = workouts.isEmpty ? nil : workouts.compactMap { $0 as? HKWorkout }.reduce(0) { $0 + $1.duration / 60 }
-        for kind in [CardKind.steps, .sleep, .heart, .workouts] {
+        do { heartToday = try await history(kind: .heart, period: .day, date: now).points }
+        catch { heartToday = []; self.error = error.localizedDescription }
+        for kind in [CardKind.steps, .workouts] {
             do { weekly[kind] = try await history(kind: kind, period: .week, date: now).points }
             catch { weekly[kind] = []; self.error = error.localizedDescription }
         }

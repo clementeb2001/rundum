@@ -23,14 +23,15 @@ public enum CardPresentation: String, Codable, CaseIterable { case value, bars, 
 public extension CardKind {
     var presentations: [CardPresentation] {
         switch self {
-        case .calendar: return [.agenda, .bars, .value]
+        case .calendar: return [.agenda]
+        case .sleep: return [.ring, .value]
         case .weather: return [.value, .line, .bars]
         case .heart: return [.line, .bars, .value]
         default: return [.ring, .bars, .line, .value]
         }
     }
     var defaultPresentation: CardPresentation {
-        switch self { case .calendar: return .agenda; case .weather: return .value; case .heart: return .line; case .sleep: return .bars; default: return .ring }
+        switch self { case .calendar: return .agenda; case .weather: return .value; case .heart: return .line; default: return .ring }
     }
     var defaultGoal: Double? {
         switch self { case .steps: return 8000; case .sleep: return 8; case .workouts: return 30; default: return nil }
