@@ -16,6 +16,9 @@ Das Xcode-Projekt und das App-Icon sind bereits enthalten. Nach Änderungen an d
 
 - Geführte Kartenauswahl ohne Konto, danach anpassbares Dashboard mit sechs Karten: Kalender, Schritte, Schlaf, Puls, Workouts und Wetter.
 - Karten aktivieren/deaktivieren; Drag & Drop im Dashboard und sortierbare Liste mit System-Bedienelementen. Freemium-Limit von zwei sichtbaren Karten; zusätzliche Karten und drei Größen bei verifiziertem StoreKit-Abo.
+- Jede Karte öffnet eine eigene Detailseite. Farben (Automatisch plus acht Farbtöne), drei Hintergründe und je nach Datentyp Werte, Balken, Linien, Zielringe oder Agenda sind pro Karte einstellbar und bleiben nach einem Neustart erhalten. Persönliche Ziele sind Anzeigepräferenzen, keine medizinischen Empfehlungen.
+- Gesundheits- und Kalenderdetails bieten Tag, Woche, Monat und Jahr. Fehlende Gesundheitswerte bleiben fehlend; überlappende Schlafintervalle werden zusammengeführt. Herzfrequenz-Mittelwerte beziehen sich auf die dargestellten Intervalle, Schlafmittelwerte auf aufgezeichnete Nächte. Die Gesundheitsverläufe bleiben ausschließlich im Arbeitsspeicher auf dem Gerät.
+- Wetterdetails mit Stunden-/Tagesvorhersage und Messgrößen; ab iOS 18 zusätzlich historische Tagesminimum/-maximum-Temperaturen von WeatherKit ab August 2021. Verlauf benötigt eine gültige WeatherKit-Freischaltung; Datumsgrenzen verwenden die iPhone-Zeitzone.
 - EventKit liest ausgewählte iOS-Kalender für die nächsten sieben Tage. Google-Kalender müssen zuvor in iOS eingebunden sein. Private Termine verlassen das Gerät nicht, außer dem ausdrücklich aktivierten lokalen Widget-Snapshot.
 - HealthKit liest Schritte, letzte Nacht, heutige Herzfrequenz und Trainingsminuten. Überlappende Schlafquellen werden zusammengeführt. Keine Health-Daten im Backend, in Dateien oder im Homescreen-Widget. Keine Datenfreigabe an Familienmitglieder.
 - Lokale, pro Konto getrennte Dashboard-Konfiguration; Cloud-Sync bei Änderungen, App-Aktivierung und manuellem Aktualisieren. Einfaches Last-write-wins für vollständige Layouts; Offline-Layouts bleiben erhalten.
@@ -44,7 +47,7 @@ Die Cloud ist im ausgelieferten Projekt noch nicht mit einem echten Dienst verbu
 
 StoreKit 2 ist eingebaut: Produkt laden, Kauf, verifizierte Entitlements, Wiederherstellen und Transaktionsupdates. Produkt-ID: `app.rundum.pro.monthly`, überschreibbar in `Local.xcconfig`. Produkt, monatliche Laufzeit, Preis und Verfügbarkeit müssen in App Store Connect eingerichtet werden. Die App zeigt den tatsächlichen StoreKit-Preis an; ohne Produkt ist kein Kauf möglich.
 
-**Noch nicht fertig:** serverseitige App-Store-Transaktionsverifikation für unbegrenzte gemeinsame Kalender und erweiterte Gesundheits-Verlaufsanalysen. Deshalb begrenzt die Datenbank derzeit alle Konten auf einen selbst erstellten gemeinsamen Kalender; das Kaufangebot verspricht diese beiden Funktionen nicht. Einem bestehenden Kalender kann man zusätzlich per Einladung beitreten. Das ist eine dokumentierte Abweichung vom finalen Freemium-Modell des Briefings.
+**Noch nicht fertig:** serverseitige App-Store-Transaktionsverifikation für unbegrenzte gemeinsame Kalender. Deshalb begrenzt die Datenbank derzeit alle Konten auf einen selbst erstellten gemeinsamen Kalender; das Kaufangebot verspricht keine unbegrenzten Kalender. Einem bestehenden Kalender kann man zusätzlich per Einladung beitreten. Lokale Gesundheitsverläufe sind inzwischen für aktive Karten verfügbar, ohne zusätzliche Pro-Sperre; weiterführende medizinische Auswertungen werden nicht angeboten.
 
 ## Architektur
 
@@ -81,4 +84,4 @@ swift test --scratch-path build/core-tests --cache-path build/swift-cache --disa
 
 Siehe `docs/VALIDATION.md` für tatsächlich durchgeführte Prüfungen und `docs/ROADMAP.md` für den verbleibenden Weg bis zur Veröffentlichung. Der Quellcode ist eine erste kompilierbare Implementierung, keine bereits freigegebene App-Store-Version.
 
-In der Erstellungsumgebung war CoreSimulator nicht erreichbar: Der aktuelle Swift-Code und die Widget-Einbettung wurden erfolgreich mit `EXCLUDED_SOURCE_FILE_NAMES=Assets.xcassets ASSETCATALOG_COMPILER_APPICON_NAME=` gebaut. Der vollständige Build mit App-Icon-Asset-Katalog und die UI-Laufzeitprüfung bleiben auf einem funktionierenden Xcode zu bestätigen.
+Der vollständige Simulator-Build inklusive App-Icon und Widget sowie Bedienungstests wurden inzwischen erfolgreich ausgeführt; aktuelle Prüfergebnisse und verbleibende Geräteprüfungen stehen im Prüfprotokoll.

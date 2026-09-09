@@ -25,4 +25,66 @@ final class CoreTests: XCTestCase {
         let restored = try JSONDecoder().decode(DashboardConfiguration.self, from: JSONEncoder().encode(config))
         XCTAssertEqual(restored.cards.first?.id.rawValue, "future.weather")
     }
+    func testLegacyCardMigrationPreservesLayout() throws {
+        let json = #"{"cards":[{"id":"sleep","size":"large"},{"id":"calendar","size":"small"}],"updatedAt":0}"#
+        let config = try JSONDecoder().decode(DashboardConfiguration.self, from: Data(json.utf8))
+        XCTAssertEqual(config.cards.map(\.id), [.sleep, .calendar])
+        XCTAssertEqual(config.cards.first?.size, .large)
+        XCTAssertEqual(config.cards.first?.presentation, .bars)
+        XCTAssertEqual(config.cards.first?.goal, 8)
+    }
+    func testPersonalizationRoundTripAndFreeVisibility() throws {
+        let card = DashboardCard(id: .steps, size: .large, tint: .pink, surface: .gradient, presentation: .line, goal: 12000)
+        let config = DashboardConfiguration(cards: [card])
+        XCTAssertEqual(try JSONDecoder().decode(DashboardConfiguration.self, from: JSONEncoder().encode(config)), config)
+        let free = try XCTUnwrap(config.visibleCards(isPro: false).first)
+        XCTAssertEqual(free.size, .medium)
+        XCTAssertEqual(free.tint, .pink)
+        XCTAssertEqual(free.surface, .gradient)
+        XCTAssertEqual(free.presentation, .line)
+        XCTAssertEqual(free.goal, 12000)
+        XCTAssertEqual(config.cards.first?.size, .large)
+    }
+    func testFutureStyleFallbackDoesNotLoseCard() throws {
+        let json = #"{"id":"heart","size":"future","tint":"future","surface":"future","presentation":"ring","goal":-1}"#
+        let card = try JSONDecoder().decode(DashboardCard.self, from: Data(json.utf8))
+        XCTAssertEqual(card.id, .heart)
+        XCTAssertEqual(card.size, .medium)
+        XCTAssertEqual(card.tint, .automatic)
+        XCTAssertEqual(card.presentation, .line)
+        XCTAssertNil(card.goal)
+    }
+    func testRingDoesNotInventMissingData() {
+        XCTAssertNil(HistoryMath.progress(value: nil, goal: 8000))
+        XCTAssertNil(HistoryMath.progress(value: 100, goal: 0))
+        XCTAssertNil(HistoryMath.progress(value: .nan, goal: 100))
+        XCTAssertEqual(HistoryMath.progress(value: 4000, goal: 8000), 0.5)
+        XCTAssertEqual(HistoryMath.progress(value: 10000, goal: 8000), 1)
+        XCTAssertEqual(HistoryMath.progress(value: 0, goal: 8000), 0)
+    }
+    func testMissingValuesExcludedFromAverage() {
+        XCTAssertNil(HistoryMath.average([nil, nil]))
+        XCTAssertEqual(HistoryMath.average([6, nil, 8]), 7)
+        XCTAssertEqual(HistoryMath.average([0, 8]), 4)
+    }
+    func testPeriodsRespectDaylightSavingAndLeapYear() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Luxembourg")!
+        let spring = calendar.date(from: DateComponents(year: 2026, month: 3, day: 29, hour: 12))!
+        let autumn = calendar.date(from: DateComponents(year: 2026, month: 10, day: 25, hour: 12))!
+        XCTAssertEqual(HistoryPeriod.day.buckets(containing: spring, calendar: calendar).count, 23)
+        XCTAssertEqual(HistoryPeriod.day.buckets(containing: autumn, calendar: calendar).count, 25)
+        let leap = calendar.date(from: DateComponents(year: 2024, month: 2, day: 10))!
+        XCTAssertEqual(HistoryPeriod.month.buckets(containing: leap, calendar: calendar).count, 29)
+        XCTAssertEqual(HistoryPeriod.year.buckets(containing: leap, calendar: calendar).count, 12)
+    }
+    func testSleepWindowUsesCalendarNoonRatherThanFixed24Hours() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Europe/Luxembourg")!
+        let date = calendar.date(from: DateComponents(year: 2026, month: 3, day: 29, hour: 15))!
+        let window = HistoryMath.sleepWindow(for: date, calendar: calendar)
+        XCTAssertEqual(calendar.component(.hour, from: window.start), 12)
+        XCTAssertEqual(calendar.component(.hour, from: window.end), 12)
+        XCTAssertEqual(window.duration / 3600, 23)
+    }
 }

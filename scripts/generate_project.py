@@ -2,8 +2,20 @@
 from pathlib import Path
 import hashlib
 import json
+import subprocess
 
 root = Path(__file__).resolve().parents[1]
+# Keep the user's working signing/build settings when refreshing source references.
+existing_settings = {}
+existing_project = root / 'Rundum.xcodeproj/project.pbxproj'
+if existing_project.exists():
+    result = subprocess.run(['plutil', '-convert', 'json', '-o', '-', str(existing_project)], capture_output=True, text=True, check=True)
+    previous = json.loads(result.stdout)['objects']
+    for target in previous.values():
+        if target.get('isa') != 'PBXNativeTarget': continue
+        for config_id in previous[target['buildConfigurationList']]['buildConfigurations']:
+            config = previous[config_id]
+            existing_settings[(target['name'], config['name'])] = config.get('buildSettings', {})
 objects = {}
 def uid(value): return hashlib.sha1(value.encode()).hexdigest()[:24].upper()
 def add(key_name, isa, **kwargs):
@@ -58,6 +70,7 @@ for name, folder, bundle, plist, entitlement in [
         if name == 'Rundum': settings['ASSETCATALOG_COMPILER_APPICON_NAME'] = 'AppIcon'
         settings['PRODUCT_BUNDLE_IDENTIFIER'] = '$(APP_BUNDLE_ID)' if name == 'Rundum' else '$(WIDGET_BUNDLE_ID)'
         if name != 'Rundum': settings.update(APPLICATION_EXTENSION_API_ONLY='YES', SKIP_INSTALL='YES', LD_RUNPATH_SEARCH_PATHS=['$(inherited)', '@executable_path/Frameworks', '@executable_path/../../Frameworks'])
+        settings.update(existing_settings.get((name, mode), {}))
         configs.append(add(name+mode, 'XCBuildConfiguration', baseConfigurationReference=config_file, buildSettings=settings, name=mode))
     configuration_list = add(name+'configs', 'XCConfigurationList', buildConfigurations=configs, defaultConfigurationIsVisible='0', defaultConfigurationName='Release')
     targets.append(add(name+'target', 'PBXNativeTarget', name=name, productName=name, productReference=product, productType='com.apple.product-type.application' if name == 'Rundum' else 'com.apple.product-type.app-extension', buildConfigurationList=configuration_list, buildPhases=[sources, resources], buildRules=[], dependencies=[]))
@@ -68,6 +81,20 @@ embed_file = add('embedwidgetfile', 'PBXBuildFile', fileRef=products[1], setting
 embed = add('embedwidget', 'PBXCopyFilesBuildPhase', buildActionMask='2147483647', dstPath='', dstSubfolderSpec='13', files=[embed_file], name='Embed App Extensions', runOnlyForDeploymentPostprocessing='0')
 objects[targets[0]]['buildPhases'].append(embed)
 objects[targets[0]]['dependencies'].append(dep)
+# The UI-test scheme uses these stable IDs. Tests do not inject fabricated health data.
+test_file, test_product = 'FC0000000000000000000022', 'FC0000000000000000000023'
+objects[test_file] = dict(isa='PBXFileReference', lastKnownFileType='sourcecode.swift', path='UITests/CardFlowTests.swift', sourceTree='<group>')
+objects[test_product] = dict(isa='PBXFileReference', explicitFileType='wrapper.cfbundle', path='RundumUITests.xctest', sourceTree='BUILT_PRODUCTS_DIR')
+children.append(test_file); products.append(test_product)
+objects['FC0000000000000000000021'] = dict(isa='PBXBuildFile', fileRef=test_file)
+objects['FC0000000000000000000026'] = dict(isa='PBXSourcesBuildPhase', buildActionMask='2147483647', files=['FC0000000000000000000021'], runOnlyForDeploymentPostprocessing='0')
+for mode, key in [('Debug', 'FC0000000000000000000027'), ('Release', 'FC0000000000000000000028')]:
+    settings = dict(PRODUCT_NAME='RundumUITests', PRODUCT_BUNDLE_IDENTIFIER='app.rundum.ios.uitests', GENERATE_INFOPLIST_FILE='YES', TEST_TARGET_NAME='Rundum', IPHONEOS_DEPLOYMENT_TARGET='16.0', SWIFT_VERSION='5.0', SDKROOT='iphoneos', TARGETED_DEVICE_FAMILY='1,2', CODE_SIGN_STYLE='Automatic')
+    settings.update(existing_settings.get(('RundumUITests', mode), {}))
+    objects[key] = dict(isa='XCBuildConfiguration', name=mode, buildSettings=settings)
+objects['FC0000000000000000000025'] = dict(isa='XCConfigurationList', buildConfigurations=['FC0000000000000000000027', 'FC0000000000000000000028'], defaultConfigurationIsVisible='0', defaultConfigurationName='Release')
+objects['FC0000000000000000000024'] = dict(isa='PBXNativeTarget', name='RundumUITests', productName='RundumUITests', productReference=test_product, productType='com.apple.product-type.bundle.ui-testing', buildConfigurationList='FC0000000000000000000025', buildPhases=['FC0000000000000000000026'], buildRules=[], dependencies=[])
+targets.append('FC0000000000000000000024')
 products_group = add('products', 'PBXGroup', children=products, name='Products', sourceTree='<group>')
 main = add('main', 'PBXGroup', children=children+[products_group], sourceTree='<group>')
 configs = [add('project'+mode, 'XCBuildConfiguration', buildSettings={'CLANG_ENABLE_MODULES': 'YES', 'SWIFT_VERSION': '5.0', 'IPHONEOS_DEPLOYMENT_TARGET': '16.0'}, name=mode) for mode in ['Debug', 'Release']]

@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FC0000000000000000000021 = {isa = PBXBuildFile; fileRef = FC0000000000000000000022; };
+		FC0000000000000000000001 = {isa = PBXBuildFile; fileRef = FC0000000000000000000011; };
+		FC0000000000000000000002 = {isa = PBXBuildFile; fileRef = FC0000000000000000000012; };
+		FC0000000000000000000003 = {isa = PBXBuildFile; fileRef = FC0000000000000000000013; };
+		FC0000000000000000000004 = {isa = PBXBuildFile; fileRef = FC0000000000000000000014; };
 		035E021CC3437282F8BB50CE /* App/DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D15C7CA423DE64384AAE98E /* App/DashboardView.swift */; };
 		04200CFFD12D083534B07BB1 /* App/Resources/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3685E330EC5277A9DD5661C6 /* App/Resources/Assets.xcassets */; };
 		2415C46A110603D057E6C2FA /* App/Language.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5436DDAA593D91628085DF2F /* App/Language.swift */; };
@@ -52,6 +57,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FC0000000000000000000022 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITests/CardFlowTests.swift; sourceTree = "<group>"; };
+		FC0000000000000000000023 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = RundumUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FC0000000000000000000011 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/CardDesign.swift; sourceTree = "<group>"; };
+		FC0000000000000000000012 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/CardDetails.swift; sourceTree = "<group>"; };
+		FC0000000000000000000013 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/HealthHistory.swift; sourceTree = "<group>"; };
+		FC0000000000000000000014 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/WeatherDetails.swift; sourceTree = "<group>"; };
 		094B0FE0E302854AF1311AFA /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = App/Resources/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		0A535D87403C3A88521BDCED /* Rundum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rundum.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		26CC2B66BA10849B794520D4 /* App/Resources/PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = App/Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -94,6 +105,11 @@
 				DF42A453F3E438C750ABFA1C /* App/LegalView.swift */,
 				8F6F2194E19AEF080086CE1E /* App/RundumApp.swift */,
 				8B26CE02678ED8BE9B5A6EFF /* App/WeatherService.swift */,
+				FC0000000000000000000011,
+				FC0000000000000000000012,
+				FC0000000000000000000013,
+				FC0000000000000000000014,
+				FC0000000000000000000022,
 				794CDC2D1145E96C6B308B68 /* Core/Models.swift */,
 				3685E330EC5277A9DD5661C6 /* App/Resources/Assets.xcassets */,
 				82792A940AEB9DBA2EEAA46C /* InfoPlist.strings */,
@@ -116,6 +132,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		FC0000000000000000000024 = {isa = PBXNativeTarget; name = RundumUITests; productName = RundumUITests; productReference = FC0000000000000000000023; productType = "com.apple.product-type.bundle.ui-testing"; buildConfigurationList = FC0000000000000000000025; buildPhases = (FC0000000000000000000026, ); buildRules = (); dependencies = (); };
 		6418B51897332505C1575A80 /* RundumWidget */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CE4A132563EAAA931D0D9AF2 /* Build configuration list for PBXNativeTarget "RundumWidget" */;
@@ -176,6 +193,7 @@
 			targets = (
 				A0AC34AA3808751894A3791E /* Rundum */,
 				6418B51897332505C1575A80 /* RundumWidget */,
+				FC0000000000000000000024 /* RundumUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -202,6 +220,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		FC0000000000000000000026 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (FC0000000000000000000021, ); runOnlyForDeploymentPostprocessing = 0; };
 		025F92A5DBAF1DDA2BFDA954 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -217,6 +236,10 @@
 				4CEBA543CF5411E084C63461 /* App/LegalView.swift in Sources */,
 				528C981AC7F12DACAA285A0C /* App/RundumApp.swift in Sources */,
 				6229BD92D01B275FF520C4D7 /* App/WeatherService.swift in Sources */,
+				FC0000000000000000000001,
+				FC0000000000000000000002,
+				FC0000000000000000000003,
+				FC0000000000000000000004,
 				E015E5CDC9677EF88A240670 /* Core/Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -253,6 +276,8 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		FC0000000000000000000027 = {isa = XCBuildConfiguration; name = Debug; buildSettings = {PRODUCT_NAME = RundumUITests; PRODUCT_BUNDLE_IDENTIFIER = app.rundum.ios.uitests; GENERATE_INFOPLIST_FILE = YES; TEST_TARGET_NAME = Rundum; IPHONEOS_DEPLOYMENT_TARGET = 16.0; SWIFT_VERSION = 5.0; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; CODE_SIGN_STYLE = Automatic; }; };
+		FC0000000000000000000028 = {isa = XCBuildConfiguration; name = Release; buildSettings = {PRODUCT_NAME = RundumUITests; PRODUCT_BUNDLE_IDENTIFIER = app.rundum.ios.uitests; GENERATE_INFOPLIST_FILE = YES; TEST_TARGET_NAME = Rundum; IPHONEOS_DEPLOYMENT_TARGET = 16.0; SWIFT_VERSION = 5.0; SDKROOT = iphoneos; TARGETED_DEVICE_FAMILY = "1,2"; CODE_SIGN_STYLE = Automatic; }; };
 		5CC172F26E38CBDCAAA3D3EE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = DFBA7AADE0868074C2861C98 /* Config/App.xcconfig */;
@@ -372,6 +397,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		FC0000000000000000000025 = {isa = XCConfigurationList; buildConfigurations = (FC0000000000000000000027, FC0000000000000000000028, ); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 		13185A6BD0969B889B6652B0 /* Build configuration list for PBXNativeTarget "Rundum" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

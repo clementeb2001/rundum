@@ -45,11 +45,14 @@ import HealthKit
 }
 
 @MainActor final class HealthService: ObservableObject {
-    private let store = HKHealthStore()
+    let store = HKHealthStore()
     @Published var steps: Double?
     @Published var sleep: Double?
     @Published var heart: Double?
     @Published var workoutMinutes: Double?
+    @Published var heartUpdated: Date?
+    @Published var weekly: [CardKind: [MetricPoint]] = [:]
+    @Published var loading = false
     @Published var error: String?
     @Published var requested = UserDefaults.standard.bool(forKey: "healthRequested")
     var available: Bool { HKHealthStore.isHealthDataAvailable() }
@@ -63,18 +66,26 @@ import HealthKit
         } catch { self.error = error.localizedDescription }
     }
     func load() async {
-        guard available && requested else { return }
+        guard available && requested, !loading else { return }
+        loading = true; error = nil
+        defer { loading = false }
         let now = Date(), start = Calendar.current.startOfDay(for: Date())
         // HealthKit deliberately does not reveal read authorization; nil must never be presented as zero.
         steps = await sum(type: HKQuantityType(.stepCount), unit: .count(), start: start, end: now)
         let heartSamples = await samples(type: HKQuantityType(.heartRate), start: start, end: now)
         heart = (heartSamples.last as? HKQuantitySample)?.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
-        let sleepStart = Calendar.current.date(byAdding: .hour, value: -12, to: start)!
-        let sleepSamples = await samples(type: HKCategoryType(.sleepAnalysis), start: sleepStart, end: now)
+        heartUpdated = heartSamples.last?.endDate
+        let sleepWindow = HistoryMath.sleepWindow(for: now)
+        let sleepStart = sleepWindow.start, sleepEnd = min(sleepWindow.end, now)
+        let sleepSamples = await samples(type: HKCategoryType(.sleepAnalysis), start: sleepStart, end: sleepEnd)
         let asleep = sleepSamples.compactMap { $0 as? HKCategorySample }.filter { [1, 3, 4, 5].contains($0.value) }
-        sleep = asleep.isEmpty ? nil : SleepMath.hours(intervals: asleep.map { DateInterval(start: $0.startDate, end: $0.endDate) }, within: DateInterval(start: sleepStart, end: now))
+        sleep = asleep.isEmpty ? nil : SleepMath.hours(intervals: asleep.map { DateInterval(start: $0.startDate, end: $0.endDate) }, within: DateInterval(start: sleepStart, end: sleepEnd))
         let workouts = await samples(type: HKObjectType.workoutType(), start: start, end: now)
         workoutMinutes = workouts.isEmpty ? nil : workouts.compactMap { $0 as? HKWorkout }.reduce(0) { $0 + $1.duration / 60 }
+        for kind in [CardKind.steps, .sleep, .heart, .workouts] {
+            do { weekly[kind] = try await history(kind: kind, period: .week, date: now).points }
+            catch { weekly[kind] = []; self.error = error.localizedDescription }
+        }
     }
     private func sum(type: HKQuantityType, unit: HKUnit, start: Date, end: Date) async -> Double? {
         await withCheckedContinuation { continuation in

@@ -8,8 +8,8 @@ struct CardPlugin: Identifiable {
 }
 enum CardRegistry {
     static let plugins: [CardPlugin] = [CardKind.calendar, .steps, .sleep, .heart, .workouts].map { kind in
-        CardPlugin(id: kind, render: { card, events in AnyView(DashboardCardView(card: card, events: events)) })
-    } + [CardPlugin(id: .weather, render: { card, _ in AnyView(WeatherCardView(card: card)) })]
+        CardPlugin(id: kind, render: { card, events in AnyView(RichMetricCardView(card: card, events: events)) })
+    } + [CardPlugin(id: .weather, render: { card, _ in AnyView(RichWeatherCardView(card: card)) })]
     static var kinds: [CardKind] { plugins.map(\.id) }
     static func render(card: DashboardCard, events: [CalendarItem]) -> AnyView {
         plugins.first { $0.id == card.id }?.render(card, events) ?? AnyView(EmptyView())

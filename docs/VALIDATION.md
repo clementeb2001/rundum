@@ -1,5 +1,13 @@
 # Prüfprotokoll · 2026-09-08
 
+## Nachtrag 2026-09-09: Karten, Personalisierung und Detailseiten
+
+- Vollständiger Simulator-Build mit den neuen Karten, Swift Charts, Detailseiten und UI-Testtarget erfolgreich; auch der unsigned iPhone-Hardware-Build mit dem Schema „Rundum Device“ ist erfolgreich.
+- Alle elf Core-Tests bestehen: bestehende Kartenkonfigurationen, Freemium-Erhalt, Farb-/Darstellungs-Persistenz, unbekannte Optionen, fehlende Messwerte, Zielringe, Schlafüberschneidungen, Sommer-/Winterzeit und Schaltjahr.
+- Alle vier Bedienungstests auf einem eigenen iPhone-Simulator bestehen: Kalenderdetails und Zeitraumwechsel, Health-Berechtigungszustand ohne erfundene Werte, Personalisierung über App-Neustarts sowie Wetteraktivierung, Wetterdetails und der leere Verlauf des noch laufenden Tages. Der Wettertest stellt anschließend die ursprüngliche Kartenauswahl wieder her. Screenshots von Kalenderdetails und Personalisierung wurden visuell geprüft.
+- Projektgenerator in einer temporären Kopie ausgeführt: gültiges Xcode-Projekt, alle vier vorhandenen Team-Einstellungen bleiben erhalten. Das aktive Projekt wurde nicht neu generiert.
+- Noch offen: reale HealthKit-Verläufe und signierte WeatherKit-Abfragen einschließlich historischer Temperaturen auf dem persönlichen iPhone, umfassende Prüfung mit großer Schrift/VoiceOver und allen Sprachen. Der neue Kartenstand wurde noch nicht auf dem persönlichen iPhone installiert. Die unten bestätigte Geräteinstallation betrifft den vorherigen Stand.
+
 ## Nachtrag: Installation auf dem persönlichen iPhone
 
 - Das persönliche iPhone wurde in Xcode als Testgerät registriert. Xcode hat die verwalteten Entwicklungsprofile für App und Widget erfolgreich bereitgestellt.

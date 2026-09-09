@@ -26,6 +26,7 @@ struct WeatherPlace: Codable, Equatable, Identifiable {
     private var requestID = UUID()
     private var locationWanted = false
     private var locationTimeout: Task<Void, Never>?
+    func setHistoryAttribution(_ value: WeatherAttribution) { attribution = value }
     override init() {
         place = UserDefaults.standard.data(forKey: "weatherPlace").flatMap { try? JSONDecoder().decode(WeatherPlace.self, from: $0) } ?? .luxembourg
         super.init(); manager.delegate = self; manager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
@@ -89,82 +90,6 @@ struct WeatherPlace: Codable, Equatable, Identifiable {
     }
 }
 
-struct WeatherCardView: View {
-    let card: DashboardCard
-    @EnvironmentObject var state: AppState
-    @EnvironmentObject var model: WeatherModel
-    @Environment(\.colorScheme) private var colorScheme
-    @State private var locations = false
-    private func temperature(_ value: Measurement<UnitTemperature>) -> String {
-        value.converted(to: .celsius).value.formatted(.number.precision(.fractionLength(0))) + "°"
-    }
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Label(state.copy("Wetter", "Météo", "Weather"), systemImage: "cloud.sun.fill").font(.headline)
-                Spacer()
-                Button { locations = true } label: { Label(model.place.name, systemImage: "mappin.and.ellipse").font(.caption).lineLimit(2) }
-            }
-            if let weather = model.weather {
-                HStack {
-                    Text(temperature(weather.currentWeather.temperature)).font(.system(.largeTitle, design: .rounded, weight: .bold))
-                    Spacer()
-                    Image(systemName: weather.currentWeather.symbolName).symbolRenderingMode(.multicolor).font(.system(size: 42)).accessibilityLabel(weather.currentWeather.condition.description)
-                }
-                if let day = weather.dailyForecast.forecast.first {
-                    Text(state.copy("Höchstwert ", "Max. ", "High ") + temperature(day.highTemperature) + " · " + state.copy("Tiefstwert ", "Min. ", "Low ") + temperature(day.lowTemperature)).font(.subheadline).foregroundStyle(.secondary)
-                }
-                if card.size != .small {
-                    HStack {
-                        Label(temperature(weather.currentWeather.apparentTemperature), systemImage: "thermometer.medium").accessibilityLabel(state.copy("Gefühlt", "Ressenti", "Feels like") + " " + temperature(weather.currentWeather.apparentTemperature))
-                        Spacer()
-                        Label(weather.currentWeather.wind.speed.converted(to: .kilometersPerHour).value.formatted(.number.precision(.fractionLength(0))) + " km/h", systemImage: "wind")
-                    }.font(.subheadline)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 22) {
-                            ForEach(Array(weather.hourlyForecast.forecast.filter { $0.date > Date() }.prefix(6)), id: \.date) { hour in
-                                VStack(spacing: 8) { Text(hour.date, format: .dateTime.hour()); Image(systemName: hour.symbolName).symbolRenderingMode(.multicolor); Text(temperature(hour.temperature)).bold(); Text(hour.precipitationChance, format: .percent.precision(.fractionLength(0))).foregroundStyle(.secondary) }.font(.caption).accessibilityElement(children: .combine)
-                            }
-                        }.padding(.vertical, 4)
-                    }
-                }
-                if card.size == .large {
-                    Divider()
-                    ForEach(Array(weather.dailyForecast.forecast.prefix(5)), id: \.date) { day in
-                        HStack {
-                            Text(day.date, format: .dateTime.weekday(.abbreviated)).frame(width: 50, alignment: .leading)
-                            Image(systemName: day.symbolName).symbolRenderingMode(.multicolor)
-                            Text(day.precipitationChance, format: .percent.precision(.fractionLength(0))).foregroundStyle(.secondary)
-                            Spacer()
-                            Text(temperature(day.lowTemperature) + " / " + temperature(day.highTemperature))
-                        }.font(.caption).accessibilityElement(children: .combine)
-                    }
-                }
-            } else if model.loading {
-                ProgressView(state.copy("Wetter wird geladen …", "Chargement de la météo…", "Loading weather…")).padding(.vertical)
-            } else {
-                Text(state.copy("Wetter gerade nicht verfügbar.", "Météo indisponible pour le moment.", "Weather is currently unavailable.")).foregroundStyle(.secondary)
-            }
-            if model.failed {
-                Notice(text: state.copy("Die Aktualisierung ist fehlgeschlagen. Bitte Verbindung prüfen und erneut versuchen.", "La mise à jour a échoué. Vérifie la connexion et réessaie.", "The update failed. Check your connection and try again."))
-            }
-            HStack {
-                if let date = model.updated { Text(date, format: .dateTime.day().month().hour().minute()).font(.caption).foregroundStyle(.secondary) }
-                Spacer()
-                Button { Task { await model.refresh(force: true) } } label: { Image(systemName: "arrow.clockwise") }.disabled(model.loading).accessibilityLabel(state.copy("Wetter aktualisieren", "Actualiser la météo", "Refresh weather"))
-            }
-            if let attribution = model.attribution, model.weather != nil {
-                HStack {
-                    AsyncImage(url: colorScheme == .dark ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL) { image in image.resizable().scaledToFit() } placeholder: { Text(attribution.serviceName).font(.caption) }.frame(width: 100, height: 22).accessibilityLabel(attribution.serviceName)
-                    Spacer()
-                    Link(state.copy("Datenquellen", "Sources des données", "Data sources"), destination: attribution.legalPageURL).font(.caption)
-                }
-            }
-        }.padding(22).background(.background, in: RoundedRectangle(cornerRadius: 26))
-            .task(id: model.place.id) { await model.refresh() }
-            .sheet(isPresented: $locations) { WeatherLocationView() }
-    }
-}
 
 struct WeatherLocationView: View {
     @EnvironmentObject var state: AppState
