@@ -63,7 +63,7 @@ struct CardDetailView: View {
             VStack(alignment: .leading, spacing: 22) {
                 PeriodControl(period: $period, date: $date, allowFuture: kind == .calendar)
                 if kind == .calendar && period != .year {
-                    CalendarMonthGrid(date: $date, events: events, color: card.accent).modifier(CardPanel(card: card))
+                    CalendarMonthGrid(date: $date, events: events, color: card.accent, weekOnly: period == .week || period == .day).modifier(CardPanel(card: card))
                 }
                 if kind != .calendar && (!health.requested || !health.available) { healthAccess }
                 else if kind == .calendar && !calendar.hasAccess { calendarAccess }
@@ -209,7 +209,7 @@ struct CardDetailView: View {
         do {
             if kind == .calendar {
                 calendar.load()
-                let calendarRange = kind == .calendar && period != .year ? HistoryPeriod.month.interval(containing: date) : range
+                let calendarRange = period == .day ? HistoryPeriod.week.interval(containing: date) : range
                 let local = calendar.history(in: calendarRange)
                 let shared = cloud.events.filter { $0.starts_at < calendarRange.end && $0.ends_at > calendarRange.start }.map { event in
                     CalendarItem(id: event.id.uuidString, title: event.title, start: event.starts_at, end: event.ends_at, allDay: false, source: cloud.calendars.first { $0.id == event.calendar_id }?.name ?? "Rundum")
@@ -236,13 +236,14 @@ struct CalendarMonthGrid: View {
     @Binding var date: Date
     let events: [CalendarItem]
     let color: Color
+    var weekOnly = false
     private let calendar = Calendar.current
-    private var month: DateInterval { calendar.dateInterval(of: .month, for: date)! }
-    private var offset: Int { (calendar.component(.weekday, from: month.start) - calendar.firstWeekday + 7) % 7 }
-    private var count: Int { calendar.range(of: .day, in: .month, for: date)!.count }
+    private var month: DateInterval { calendar.dateInterval(of: weekOnly ? .weekOfYear : .month, for: date)! }
+    private var offset: Int { weekOnly ? 0 : (calendar.component(.weekday, from: month.start) - calendar.firstWeekday + 7) % 7 }
+    private var count: Int { weekOnly ? 7 : calendar.range(of: .day, in: .month, for: date)!.count }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Text(date, format: .dateTime.month(.wide).year()).font(.title2.bold())
+            if !weekOnly { Text(date, format: .dateTime.month(.wide).year()).font(.title2.bold()) }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 7), spacing: 10) {
                 ForEach(0..<7, id: \.self) { index in
                     Text(calendar.veryShortStandaloneWeekdaySymbols[(calendar.firstWeekday - 1 + index) % 7]).font(.caption).foregroundStyle(.secondary)
@@ -270,6 +271,6 @@ struct CalendarMonthGrid: View {
                     HStack { ForEach(sources, id: \.self) { source in Label { Text(source) } icon: { Circle().fill(calendarSourceColor(source)).frame(width: 8, height: 8) }.font(.caption).padding(8).background(.quaternary, in: Capsule()) } }
                 }
             }
-        }.accessibilityIdentifier("calendar-month-grid")
+        }.accessibilityIdentifier(weekOnly ? "calendar-week-grid" : "calendar-month-grid")
     }
 }

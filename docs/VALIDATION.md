@@ -1,5 +1,20 @@
 # Prüfprotokoll · 2026-09-08
 
+## Tagesauswahl und Kalenderwoche 2026-09-09
+
+- Heute-Kalender zeigt nur Termine des ausgewählten Tages, standardmäßig heute. Die sieben Tagesbuttons wechseln die Liste ohne Navigation; der Kartenkopf öffnet weiterhin die Details. Lokale Termine werden auch dann berücksichtigt, wenn sie heute bereits beendet sind; mehrtägige Termine erscheinen an jedem betroffenen Tag.
+- Wochenansicht in den Kalenderdetails verwendet genau sieben Tage mit der lokalen Kalenderwoche, einschließlich Wochen über Monatsgrenzen. Tagesansicht verwendet denselben Wochenstreifen zur Tagesauswahl, Monatsansicht behält das Monatsraster.
+- Simulator-Bedienungstest erfolgreich: Tageswechsel aktualisiert die Beschriftung ohne Detailnavigation, Kalenderkopf öffnet Details, Wochenraster enthält genau sieben Tagesbuttons, Rückwechsel zu Monat und Dashboard funktioniert. Signierter iPhone-Build erfolgreich. Ein zunächst zu kleiner Trefferbereich am Kartenkopf wurde auf mindestens 44 Punkte Höhe mit vollständiger rechteckiger Tippfläche korrigiert.
+- Apples fertiger Schlafscore ist in der öffentlichen HealthKit-Datentyp-Dokumentation und den installierten SDK-Headern nicht auffindbar. Kein proprietärer Score oder eigener Qualitätswert wird erfunden; Schlafzielring vorerst unverändert.
+- Wetter-Nachtrag: Nach Aktivierung des zusätzlichen WeatherKit-App-Service durch den Betreiber war der echte Abruf auf dem persönlichen iPhone erfolgreich: `success forecast + attribution`. Der darunter dokumentierte Authentifizierungsfehler beschreibt den Zustand davor.
+
+## Wetterdiagnose 2026-09-09
+
+- Auf dem persönlichen iPhone reproduziert: `forecast · WeatherDaemon.WDSJWTAuthenticatorServiceListener.Errors (2)`. Der native WeatherKit-Abruf scheitert bei der Authentifizierung; erfolgreiche echte Wetterdaten sind weiterhin nicht bestätigt. Die zusätzliche App-Service-Freischaltung im Developer-Portal ist noch ungeprüft. Aus dem Fehlercode allein lässt sich keine eindeutig fehlende Portal-Einstellung ableiten.
+- Signiertes App-Binary und eingebettetes Provisioning-Profil enthalten beide die WeatherKit-Berechtigung. Signierter Diagnosebuild in einem temporären Ordner erfolgreich, auf dem iPhone installiert und gestartet. Build im Documents-Ordner scheiterte zuvor an Finder-Metadaten, nicht an Swift-Code.
+- Abruf gehört jetzt dem gemeinsamen Wettermodell statt der Lebensdauer einer SwiftUI-Karte. Zeitgrenze von 30 Sekunden, erzwungener Neuversuch und gegen veraltete Antworten abgesicherter Ortswechsel. Fehlerstufe und Domain/Code werden sichtbar; keine Token, Koordinaten oder beliebigen Fehler-Payloads in der Diagnoseausgabe.
+- Wetter-Bedienungstest im Simulator erfolgreich. Er prüft Navigation, nicht die erfolgreiche Apple-Authentifizierung. Der echte iPhone-Abruf mit explizitem `SWIFT_ACTIVE_COMPILATION_CONDITIONS=DEBUG` und Startargument `--weather-diagnostic` bestätigt den obigen Fehler. Das Startargument ist nur im Diagnosebuild aktiv und verändert keine Kartenauswahl.
+
 ## Kartenkorrektur 2026-09-09
 
 - Kalender ohne Statistikdiagramme: Monatsraster, Tagesauswahl und Terminliste mit stabilen Farben je Kalenderquelle. Farben stellen keine aktive Partnerverknüpfung dar.

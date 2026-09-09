@@ -174,6 +174,8 @@ struct MetricChart: View {
 struct RichMetricCardView: View {
     let card: DashboardCard
     let events: [CalendarItem]
+    var interactiveCalendar = false
+    @State private var calendarDay = Date()
     @EnvironmentObject var state: AppState
     @EnvironmentObject var health: HealthService
     @EnvironmentObject var calendar: CalendarService
@@ -182,7 +184,13 @@ struct RichMetricCardView: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            CardHeading(card: card, subtitle: card.id == .sleep ? state.copy("Letzte Nacht", "Cette nuit", "Last night") : state.copy("Heute", "Aujourd’hui", "Today"))
+            if card.id == .calendar && interactiveCalendar {
+                NavigationLink { CardDetailView(kind: .calendar) } label: {
+                    CardHeading(card: card, subtitle: state.copy("Kalender öffnen", "Ouvrir le calendrier", "Open calendar")).frame(minHeight: 44).contentShape(Rectangle())
+                }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-calendar")
+            } else {
+                CardHeading(card: card, subtitle: card.id == .sleep ? state.copy("Letzte Nacht", "Cette nuit", "Last night") : state.copy("Heute", "Aujourd’hui", "Today"))
+            }
             if card.id == .calendar { calendarBody }
             else if !health.requested {
                 Label(state.copy("Apple Health verbinden", "Connecter Apple Santé", "Connect Apple Health"), systemImage: "heart.text.square").font(.title3.weight(.semibold))
@@ -214,24 +222,34 @@ struct RichMetricCardView: View {
             }
         }.modifier(CardPanel(card: card))
     }
-    private var upcoming: [CalendarItem] { Array(events.filter { $0.end >= Date() }.prefix(card.size == .small ? 1 : card.size == .medium ? 3 : 5)) }
+    private var upcoming: [CalendarItem] {
+        let range = HistoryPeriod.day.interval(containing: calendarDay)
+        var seen = Set<String>()
+        return (calendar.history(in: range) + (interactiveCalendar ? events : [])).filter {
+            $0.start < range.end && $0.end > range.start && seen.insert($0.id).inserted
+        }.sorted { $0.start < $1.start }
+    }
     @ViewBuilder private var calendarBody: some View {
+        let stripStart = Calendar.current.startOfDay(for: Date())
+        let stripEnd = Calendar.current.date(byAdding: .day, value: 7, to: stripStart)!
+        let markedEvents = calendar.history(in: DateInterval(start: stripStart, end: stripEnd)) + events
         HStack {
             ForEach(0..<7, id: \.self) { offset in
                 let day = Calendar.current.date(byAdding: .day, value: offset, to: Date())!
-                VStack(spacing: 8) {
+                Button { calendarDay = day } label: { VStack(spacing: 8) {
                     Text(day, format: .dateTime.weekday(.narrow)).font(.caption2).foregroundStyle(.secondary)
-                    Text(day, format: .dateTime.day()).font(.subheadline.bold()).frame(width: 30, height: 30).background(offset == 0 ? card.accent : .clear, in: Circle()).foregroundStyle(offset == 0 ? .white : .primary)
-                    Circle().fill(events.contains { Calendar.current.isDate($0.start, inSameDayAs: day) } ? card.accent : .clear).frame(width: 4, height: 4)
-                }.frame(maxWidth: .infinity)
+                    Text(day, format: .dateTime.day()).font(.subheadline.bold()).frame(width: 30, height: 30).background(Calendar.current.isDate(day, inSameDayAs: calendarDay) ? card.accent : .clear, in: Circle()).foregroundStyle(Calendar.current.isDate(day, inSameDayAs: calendarDay) ? .white : .primary)
+                    Circle().fill(markedEvents.contains { $0.start < Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: day))! && $0.end > Calendar.current.startOfDay(for: day) } ? card.accent : .clear).frame(width: 4, height: 4)
+                }.frame(maxWidth: .infinity) }.buttonStyle(.plain).disabled(!interactiveCalendar).accessibilityIdentifier("calendar-day-\(offset)")
             }
         }
+        Text(calendarDay, format: .dateTime.weekday(.wide).day().month(.wide)).font(.subheadline.bold()).accessibilityIdentifier("calendar-selected-day")
         if !calendar.hasAccess && events.isEmpty {
             Label(state.copy("Kalender verbinden", "Connecter les calendriers", "Connect calendars"), systemImage: "calendar.badge.plus").font(.title3.weight(.semibold))
             Text(state.copy("Deine Termine, an einem Ort. Tippe für Details.", "Tes événements réunis. Touche pour les détails.", "Your events in one place. Tap for details.")).font(.subheadline).foregroundStyle(.secondary)
         } else if upcoming.isEmpty {
             Label(state.copy("Platz für dich", "Du temps pour toi", "Room for you"), systemImage: "leaf").font(.title2.bold())
-            Text(state.copy("Keine anstehenden Termine in den nächsten 7 Tagen.", "Aucun événement dans les 7 prochains jours.", "No upcoming events in the next 7 days.")).font(.subheadline).foregroundStyle(.secondary)
+            Text(state.copy("Keine Termine an diesem Tag.", "Aucun événement ce jour-là.", "No events on this day.")).font(.subheadline).foregroundStyle(.secondary)
         } else {
             ForEach(upcoming) { event in
                 EventRow(event: event, color: card.accent)

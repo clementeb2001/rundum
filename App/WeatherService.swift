@@ -19,37 +19,77 @@ struct WeatherPlace: Codable, Equatable, Identifiable {
     @Published private(set) var loading = false
     @Published private(set) var updated: Date?
     @Published private(set) var failed = false
+    @Published private(set) var diagnostic: String?
     @Published private(set) var locating = false
     @Published private(set) var locationDenied = false
     private let service = WeatherService.shared
     private let manager = CLLocationManager()
     private var requestID = UUID()
+    private var fetchTask: Task<Void, Never>?
+    private var fetchTimeout: Task<Void, Never>?
     private var locationWanted = false
     private var locationTimeout: Task<Void, Never>?
     func setHistoryAttribution(_ value: WeatherAttribution) { attribution = value }
     override init() {
         place = UserDefaults.standard.data(forKey: "weatherPlace").flatMap { try? JSONDecoder().decode(WeatherPlace.self, from: $0) } ?? .luxembourg
         super.init(); manager.delegate = self; manager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--weather-diagnostic") {
+            Task { await refresh(force: true) }
+        }
+        #endif
     }
     func select(_ place: WeatherPlace) {
-        requestID = UUID(); loading = false; weather = nil; attribution = nil; updated = nil; failed = false
+        fetchTask?.cancel(); fetchTimeout?.cancel(); fetchTask = nil
+        requestID = UUID(); loading = false; weather = nil; attribution = nil; updated = nil; failed = false; diagnostic = nil
         locationWanted = false; locating = false; locationTimeout?.cancel()
         self.place = place
         if let data = try? JSONEncoder().encode(place) { UserDefaults.standard.set(data, forKey: "weatherPlace") }
     }
     func refresh(force: Bool = false) async {
-        guard !loading, force || (updated.map({ Date().timeIntervalSince($0) > 900 }) ?? true) else { return }
-        let id = UUID(); requestID = id; loading = true; failed = false
+        // The shared request belongs to the model, not a dashboard view's lifetime.
+        // Opening details must not abandon a request cancelled by SwiftUI navigation.
+        if loading && !force { await fetchTask?.value; return }
+        guard force || (updated.map({ Date().timeIntervalSince($0) > 900 }) ?? true) else { return }
+        fetchTask?.cancel(); fetchTimeout?.cancel()
+        let id = UUID(); requestID = id; loading = true; failed = false; diagnostic = nil
+        let location = place.location
+        fetchTask = Task { [weak self] in await self?.fetch(location: location, id: id) }
+        fetchTimeout = Task { [weak self] in
+            do { try await Task.sleep(nanoseconds: 30_000_000_000) } catch { return }
+            guard let self, requestID == id, loading else { return }
+            fetchTask?.cancel(); requestID = UUID(); loading = false; failed = true
+            diagnostic = "WeatherKit · timeout (30 s)"
+            #if DEBUG
+            print("RundumWeather: timeout"); fflush(stdout)
+            #endif
+        }
+        await fetchTask?.value
+    }
+    private func fetch(location: CLLocation, id: UUID) async {
         defer { if requestID == id { loading = false } }
+        var stage = "forecast"
         do {
-            async let forecast = service.weather(for: place.location)
-            async let credits = service.attribution
-            let result = try await (forecast, credits)
+            let forecast = try await service.weather(for: location)
+            stage = "attribution"
+            let credits = try await service.attribution
             guard requestID == id, !Task.isCancelled else { return }
-            weather = result.0; attribution = result.1; updated = Date()
+            weather = forecast; attribution = credits; updated = Date(); fetchTimeout?.cancel()
+            #if DEBUG
+            print("RundumWeather: success forecast + attribution"); fflush(stdout)
+            #endif
         } catch {
-            guard requestID == id else { return }
-            failed = true
+            guard requestID == id, !Task.isCancelled else { return }
+            failed = true; fetchTimeout?.cancel()
+            let ns = error as NSError
+            // Never expose coordinates, URLs, tokens or arbitrary error userInfo.
+            diagnostic = "\(stage) · \(ns.domain) (\(ns.code))"
+            if let underlying = ns.userInfo[NSUnderlyingErrorKey] as? NSError {
+                diagnostic = (diagnostic ?? "") + " · \(underlying.domain) (\(underlying.code))"
+            }
+            #if DEBUG
+            print("RundumWeather: " + (diagnostic ?? "failed")); fflush(stdout)
+            #endif
         }
     }
     func useCurrentLocation() {

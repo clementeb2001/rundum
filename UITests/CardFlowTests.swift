@@ -26,6 +26,13 @@ final class CardFlowTests: XCTestCase {
         waitForExpectations(timeout: 5)
     }
     func testCalendarDetailPeriodsAndReturn() {
+        let dayLabel = app.staticTexts["calendar-selected-day"]
+        XCTAssertTrue(dayLabel.waitForExistence(timeout: 10))
+        let todayLabel = dayLabel.label
+        app.buttons["calendar-day-1"].tap()
+        XCTAssertNotEqual(dayLabel.label, todayLabel)
+        XCTAssertFalse(app.segmentedControls["history-period"].exists)
+        app.buttons["calendar-day-0"].tap()
         let card = app.buttons["dashboard-card-calendar"]
         XCTAssertTrue(card.waitForExistence(timeout: 10)); card.tap()
         let periods = app.segmentedControls["history-period"]
@@ -33,6 +40,11 @@ final class CardFlowTests: XCTestCase {
         periods.buttons["Monat"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["calendar-month-grid"].firstMatch.waitForExistence(timeout: 5))
         XCTAssertFalse(app.segmentedControls.buttons["Balken"].exists)
+        periods.buttons["Woche"].tap()
+        let week = app.descendants(matching: .any)["calendar-week-grid"].firstMatch
+        XCTAssertTrue(week.waitForExistence(timeout: 5))
+        XCTAssertEqual(week.buttons.count, 7)
+        periods.buttons["Monat"].tap()
         app.buttons["history-previous"].tap()
         screenshot("calendar-history")
         app.navigationBars.buttons.element(boundBy: 0).tap()

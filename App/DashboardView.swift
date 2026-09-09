@@ -32,12 +32,18 @@ struct DashboardView: View {
                     }
                     ForEach(state.configuration.visibleCards(isPro: purchases.isPro)) { card in
                         VStack(spacing: 10) {
+                            if card.id == .calendar {
+                                RichMetricCardView(card: card, events: cloud.events.map { event in
+                                    CalendarItem(id: event.id.uuidString, title: event.title, start: event.starts_at, end: event.ends_at, allDay: false, source: cloud.calendars.first { $0.id == event.calendar_id }?.name ?? "Rundum")
+                                }, interactiveCalendar: true)
+                            } else {
                             NavigationLink {
                                 if card.id == .weather { WeatherDetailView() }
                                 else { CardDetailView(kind: card.id) }
                             } label: {
                                 CardRegistry.render(card: card, events: allEvents)
                             }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-" + card.id.rawValue)
+                            }
                             if card.id == .weather { WeatherCredits().padding(.horizontal, 12) }
                         }
                             .contextMenu { Button { styling = card } label: { Label(state.copy("Karte gestalten", "Personnaliser la carte", "Customize card"), systemImage: "paintpalette") } }

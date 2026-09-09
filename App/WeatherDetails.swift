@@ -179,7 +179,11 @@ struct WeatherDetailView: View {
             }
         }
         if model.failed || model.weather == nil {
-            Button(state.copy("Wetter erneut laden", "Recharger la météo", "Reload weather")) { Task { await model.refresh(force: true) } }.buttonStyle(.bordered).disabled(model.loading)
+            if let diagnostic = model.diagnostic {
+                Text(state.copy("Abruffehler: ", "Erreur de chargement : ", "Request error: ") + diagnostic).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                Text(state.copy("Prüfe Internet und die WeatherKit-Freischaltung der App. Standortzugriff ist bei einer ausgewählten Stadt nicht erforderlich.", "Vérifie Internet et l’activation de WeatherKit. La localisation n’est pas nécessaire pour une ville sélectionnée.", "Check internet and the app’s WeatherKit activation. Location permission is not required for a selected city.")).font(.caption).foregroundStyle(.secondary)
+            }
+            Button(state.copy("Wetter erneut laden", "Recharger la météo", "Reload weather")) { Task { await model.refresh(force: true) } }.buttonStyle(.bordered)
         }
     }
     private func weatherFact(_ title: String, _ value: String, _ symbol: String) -> some View {
