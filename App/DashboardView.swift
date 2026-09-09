@@ -23,13 +23,6 @@ struct DashboardView: View {
                         Text(state.copy("Hallo, neuer Tag.", "Bonjour, nouvelle journée.", "Hello, new day.")).font(.system(.largeTitle, design: .rounded, weight: .bold))
                         Text(state.copy("Alles Wichtige. An deinem Platz.", "L’essentiel. Au même endroit.", "Everything that matters. In your space.")).foregroundStyle(.secondary)
                     }
-                    HStack(spacing: 14) {
-                        Image(systemName: "sun.horizon.fill").font(.title).foregroundStyle(Palette.peach)
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(state.copy("Ein bisschen mehr Leichtigkeit.", "Un quotidien un peu plus léger.", "Make room for a lighter day.")).font(.headline)
-                            Text(state.copy("Dein Überblick wächst mit dir.", "Ton aperçu évolue avec toi.", "Your overview grows with you.")).font(.subheadline).opacity(0.8)
-                        }; Spacer(minLength: 0)
-                    }.padding(22).foregroundStyle(.white).frame(maxWidth: .infinity, alignment: .leading).background(Palette.teal, in: RoundedRectangle(cornerRadius: 26))
                     if let error = state.syncError { Notice(text: state.copy("Offline gespeichert. Synchronisierung ausstehend: ", "Enregistré localement. Synchronisation en attente : ", "Saved locally. Sync pending: ") + error) }
                     if state.configuration.cards.isEmpty {
                         VStack(spacing: 14) { Image(systemName: "square.grid.2x2").font(.largeTitle); Text(state.copy("Hier beginnt dein Überblick.", "Ton aperçu commence ici.", "Your overview starts here.")); Button(state.copy("Karten auswählen", "Choisir les cartes", "Choose cards")) { library = true } }.frame(maxWidth: .infinity).padding(32).background(.background, in: RoundedRectangle(cornerRadius: 24))
