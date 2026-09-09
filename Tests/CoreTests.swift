@@ -1,6 +1,25 @@
 import XCTest
 @testable import RundumCore
 final class CoreTests: XCTestCase {
+    func testTimelineClipsDaysAndExcludesAllDay() {
+        let day = Calendar.current.startOfDay(for: Date())
+        func event(_ id: String, _ start: Double, _ end: Double, allDay: Bool = false) -> CalendarItem {
+            .init(id: id, title: id, start: day.addingTimeInterval(start * 3600), end: day.addingTimeInterval(end * 3600), allDay: allDay, source: "Test")
+        }
+        let values = CalendarTimelineLayout.placements(events: [event("overnight", -2, 2), event("all", 0, 24, allDay: true), event("past", -4, -1)], day: day)
+        XCTAssertEqual(values.count, 1)
+        XCTAssertEqual(values[0].start, day)
+        XCTAssertEqual(values[0].end, day.addingTimeInterval(7200))
+    }
+    func testTimelineSeparatesOverlapsAndReusesLanes() {
+        let day = Calendar.current.startOfDay(for: Date())
+        func event(_ id: String, _ start: Double, _ end: Double) -> CalendarItem {
+            .init(id: id, title: id, start: day.addingTimeInterval(start * 3600), end: day.addingTimeInterval(end * 3600), allDay: false, source: "Test")
+        }
+        let values = CalendarTimelineLayout.placements(events: [event("a", 8, 10), event("b", 9, 11), event("c", 10, 12), event("d", 13, 14)], day: day)
+        XCTAssertEqual(values.map(\.lane), [0, 1, 0, 0])
+        XCTAssertEqual(values.map(\.lanes), [2, 2, 2, 1])
+    }
     func testCalendarAndSleepMigrateAwayFromDashboardCharts() throws {
         let calendar = try JSONDecoder().decode(DashboardCard.self, from: Data(#"{"id":"calendar","presentation":"bars","tint":"pink"}"#.utf8))
         let sleep = try JSONDecoder().decode(DashboardCard.self, from: Data(#"{"id":"sleep","presentation":"bars","goal":7.5}"#.utf8))

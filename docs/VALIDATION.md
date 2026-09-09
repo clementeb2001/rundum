@@ -1,5 +1,12 @@
 # Prüfprotokoll · 2026-09-08
 
+## Stundenplan für Tag und Heute · 2026-09-09
+
+- Kalenderdetails: Tag zeigt ausschließlich das Datum und einen vertikal scrollbaren Stundenplan; kein Wochen-/Monatsraster. Woche behält sieben auswählbare Tage. Heute zeigt für den ausgewählten Tag eine kompakte Zeitachse statt der bisherigen Terminliste.
+- Termine sind nach Beginn und Dauer platziert. Überlappende Blöcke werden in Spalten aufgeteilt; kurze Termine erhalten eine Mindesthöhe. Ganztägige Termine stehen separat, mehrtägige Zeitblöcke werden an Tagesgrenzen gekürzt. Antippen öffnet die vollständigen Terminangaben. Eine minutenweise aktualisierte rote Linie markiert die aktuelle Uhrzeit.
+- 14 Core-Tests erfolgreich, einschließlich Überlappungsspalten, Wiederverwendung freier Spalten, Tagesgrenzen und Ausschluss ganztägiger Einträge aus dem Stundenraster. Vorhandene DST-Tests bestätigen 23-/25-Stunden-Tage. Simulator-Test prüft, dass beim Umschalten auf Tag eine Zeitachse und kein Wochen-/Monatsraster erscheint; erste Tagesdarstellung visuell geprüft.
+- Die Screenshots des isolierten Simulators enthalten keine echten Kalendertermine. Das Verhalten mit persönlichen Terminen und sehr großer Schrift bleibt auf dem Gerät zu prüfen.
+
 ## Tagesauswahl und Kalenderwoche 2026-09-09
 
 - Heute-Kalender zeigt nur Termine des ausgewählten Tages, standardmäßig heute. Die sieben Tagesbuttons wechseln die Liste ohne Navigation; der Kartenkopf öffnet weiterhin die Details. Lokale Termine werden auch dann berücksichtigt, wenn sie heute bereits beendet sind; mehrtägige Termine erscheinen an jedem betroffenen Tag.

@@ -44,6 +44,11 @@ final class CardFlowTests: XCTestCase {
         let week = app.descendants(matching: .any)["calendar-week-grid"].firstMatch
         XCTAssertTrue(week.waitForExistence(timeout: 5))
         XCTAssertEqual(week.buttons.count, 7)
+        periods.buttons["Tag"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["calendar-day-timeline"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.descendants(matching: .any)["calendar-week-grid"].firstMatch.exists)
+        XCTAssertFalse(app.descendants(matching: .any)["calendar-month-grid"].firstMatch.exists)
+        screenshot("calendar-day-hours")
         periods.buttons["Monat"].tap()
         app.buttons["history-previous"].tap()
         screenshot("calendar-history")

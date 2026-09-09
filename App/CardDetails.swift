@@ -62,11 +62,14 @@ struct CardDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 PeriodControl(period: $period, date: $date, allowFuture: kind == .calendar)
-                if kind == .calendar && period != .year {
-                    CalendarMonthGrid(date: $date, events: events, color: card.accent, weekOnly: period == .week || period == .day).modifier(CardPanel(card: card))
+                if kind == .calendar && (period == .month || period == .week) {
+                    CalendarMonthGrid(date: $date, events: events, color: card.accent, weekOnly: period == .week).modifier(CardPanel(card: card))
                 }
                 if kind != .calendar && (!health.requested || !health.available) { healthAccess }
                 else if kind == .calendar && !calendar.hasAccess { calendarAccess }
+                if kind == .calendar && period == .day && !busy {
+                    CalendarDayTimeline(day: date, events: events, compact: false).modifier(CardPanel(card: card))
+                }
                 if busy { ProgressView(state.copy("Werte werden geladen …", "Chargement des valeurs…", "Loading values…")).frame(maxWidth: .infinity).padding(30) }
                 else if let failure {
                     VStack(alignment: .leading, spacing: 12) {
@@ -76,7 +79,7 @@ struct CardDetailView: View {
                     }.modifier(CardPanel(card: card))
                 } else if kind == .calendar ? calendar.hasAccess || !events.isEmpty : health.requested && health.available {
                     if kind == .calendar {
-                        calendarRecords
+                        if period != .day { calendarRecords }
                     } else { summaryPanel; metricRecords }
                 }
                 explanation
@@ -209,7 +212,7 @@ struct CardDetailView: View {
         do {
             if kind == .calendar {
                 calendar.load()
-                let calendarRange = period == .day ? HistoryPeriod.week.interval(containing: date) : range
+                let calendarRange = range
                 let local = calendar.history(in: calendarRange)
                 let shared = cloud.events.filter { $0.starts_at < calendarRange.end && $0.ends_at > calendarRange.start }.map { event in
                     CalendarItem(id: event.id.uuidString, title: event.title, start: event.starts_at, end: event.ends_at, allDay: false, source: cloud.calendars.first { $0.id == event.calendar_id }?.name ?? "Rundum")
@@ -230,6 +233,84 @@ private func calendarSourceColor(_ source: String) -> Color {
     let colors: [Color] = [.blue, .purple, .orange, .teal, .pink, .indigo]
     let index = source.utf8.reduce(0) { ($0 * 31 + Int($1)) % colors.count }
     return colors[index]
+}
+
+struct CalendarDayTimeline: View {
+    let day: Date
+    let events: [CalendarItem]
+    var compact = false
+    @EnvironmentObject var state: AppState
+    @State private var selectedEvent: CalendarItem?
+    private let hourHeight: CGFloat = 72
+    private var range: DateInterval { HistoryPeriod.day.interval(containing: day) }
+    private var hours: [DateInterval] { HistoryPeriod.day.buckets(containing: day) }
+    private var visible: [CalendarItem] { events.filter { $0.start < range.end && $0.end > range.start } }
+    private var placed: [CalendarTimelinePlacement] { CalendarTimelineLayout.placements(events: visible, day: day) }
+    private func y(_ date: Date) -> CGFloat { CGFloat(date.timeIntervalSince(range.start) / 3600) * hourHeight }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if !compact { Text(day, format: .dateTime.weekday(.wide).day().month(.wide)).font(.title3.bold()) }
+            ForEach(visible.filter(\.allDay)) { event in
+                Button { selectedEvent = event } label: {
+                    HStack { Text(state.copy("Ganztägig", "Toute la journée", "All day")).font(.caption); Text(event.title).font(.subheadline.bold()); Spacer(minLength: 0) }
+                        .foregroundStyle(calendarSourceColor(event.source)).padding(10).background(calendarSourceColor(event.source).opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+                }.buttonStyle(.plain)
+            }
+            ScrollViewReader { reader in
+                ScrollView(.vertical) {
+                    GeometryReader { geometry in
+                        ZStack(alignment: .topLeading) {
+                            VStack(spacing: 0) { ForEach(Array(hours.enumerated()), id: \.offset) { index, hour in
+                                HStack(spacing: 8) {
+                                    Text(hour.start, format: .dateTime.hour().minute()).font(.caption2).monospacedDigit().foregroundStyle(.secondary).frame(width: 42, alignment: .trailing)
+                                    Rectangle().fill(Color.secondary.opacity(0.16)).frame(height: 1)
+                                }.frame(height: 16).frame(height: hourHeight, alignment: .top).id(index)
+                            } }
+                            ForEach(placed, id: \.event.id) { placement in
+                                let width = max(1, (geometry.size.width - 54) / CGFloat(placement.lanes))
+                                eventBlock(placement, width: width)
+                                    .offset(x: 54 + CGFloat(placement.lane) * width, y: y(placement.start) + 8)
+                            }
+                            TimelineView(.periodic(from: .now, by: 60)) { context in
+                                if range.contains(context.date) {
+                                    HStack(spacing: 0) { Circle().fill(.red).frame(width: 6, height: 6); Rectangle().fill(.red).frame(height: 1) }
+                                        .padding(.leading, 47).offset(y: y(context.date) + 8).allowsHitTesting(false).accessibilityHidden(true)
+                                }
+                            }
+                        }
+                    }.frame(height: CGFloat(hours.count) * hourHeight + 18)
+                }.frame(height: compact ? 280 : 520)
+                    .task(id: Calendar.current.startOfDay(for: day)) {
+                        let target = Calendar.current.isDateInToday(day) ? Date() : placed.first?.start ?? range.start.addingTimeInterval(8 * 3600)
+                        let index = max(0, min(hours.count - 1, Int(target.timeIntervalSince(range.start) / 3600) - 1))
+                        reader.scrollTo(index, anchor: .top)
+                    }
+            }
+            Text(state.copy("Zum Scrollen über die Stunden wischen · Termin antippen für Details", "Fais défiler les heures · touche un événement pour ses détails", "Swipe to scroll through hours · tap an event for details")).font(.caption2).foregroundStyle(.secondary)
+        }.accessibilityIdentifier(compact ? "calendar-today-timeline" : "calendar-day-timeline")
+            .sheet(item: $selectedEvent) { event in
+                NavigationStack {
+                    Form {
+                        Section { Text(event.title).font(.title2.bold()); Text(event.source).foregroundStyle(calendarSourceColor(event.source)) }
+                        Section { LabeledContent(state.copy("Beginn", "Début", "Start"), value: event.start.formatted(date: .complete, time: event.allDay ? .omitted : .shortened)); LabeledContent(state.copy("Ende", "Fin", "End"), value: event.end.formatted(date: .complete, time: event.allDay ? .omitted : .shortened)) }
+                    }.toolbar { ToolbarItem(placement: .confirmationAction) { Button(state.copy("Fertig", "Terminé", "Done")) { selectedEvent = nil } } }
+                }
+            }
+    }
+    private func eventBlock(_ placement: CalendarTimelinePlacement, width: CGFloat) -> some View {
+        let event = placement.event
+        let color = calendarSourceColor(event.source)
+        let height = max(CGFloat(18), y(placement.end) - y(placement.start) - 2)
+        let label = [event.title, event.start.formatted(date: .abbreviated, time: .shortened), event.end.formatted(date: .abbreviated, time: .shortened), event.source].joined(separator: ", ")
+        return Button { selectedEvent = event } label: {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(event.title).font(.caption.weight(.semibold)).lineLimit(compact ? 2 : 3)
+                if placement.end.timeIntervalSince(placement.start) >= 3600 { Text(event.start, format: .dateTime.hour().minute()).font(.caption2) }
+            }.padding(5).frame(width: max(1, width - 3), height: height, alignment: .topLeading)
+                .background(color.opacity(0.15), in: RoundedRectangle(cornerRadius: 7)).clipped()
+                .overlay(alignment: .leading) { RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 3) }
+        }.buttonStyle(.plain).foregroundStyle(color).accessibilityLabel(label)
+    }
 }
 
 struct CalendarMonthGrid: View {

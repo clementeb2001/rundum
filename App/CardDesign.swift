@@ -250,10 +250,9 @@ struct RichMetricCardView: View {
         } else if upcoming.isEmpty {
             Label(state.copy("Platz für dich", "Du temps pour toi", "Room for you"), systemImage: "leaf").font(.title2.bold())
             Text(state.copy("Keine Termine an diesem Tag.", "Aucun événement ce jour-là.", "No events on this day.")).font(.subheadline).foregroundStyle(.secondary)
+            CalendarDayTimeline(day: calendarDay, events: [], compact: true)
         } else {
-            ForEach(upcoming) { event in
-                EventRow(event: event, color: card.accent)
-            }
+            CalendarDayTimeline(day: calendarDay, events: upcoming, compact: true)
         }
     }
     private var nextDays: [MetricPoint] {

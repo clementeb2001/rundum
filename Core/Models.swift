@@ -137,6 +137,37 @@ public struct CalendarItem: Identifiable, Codable {
         self.id = id; self.title = title; self.start = start; self.end = end; self.allDay = allDay; self.source = source
     }
 }
+
+public struct CalendarTimelinePlacement {
+    public let event: CalendarItem
+    public let start: Date
+    public let end: Date
+    public var lane: Int
+    public var lanes: Int
+}
+public enum CalendarTimelineLayout {
+    /// Clip to this local day. Use minimum visual height when resolving overlaps.
+    public static func placements(events: [CalendarItem], day: Date, calendar: Calendar = .current) -> [CalendarTimelinePlacement] {
+        let range = HistoryPeriod.day.interval(containing: day, calendar: calendar)
+        let sorted = events.filter { !$0.allDay && $0.start < range.end && $0.end > range.start }
+            .sorted { $0.start == $1.start ? $0.id < $1.id : $0.start < $1.start }
+        var result: [CalendarTimelinePlacement] = [], group: [CalendarTimelinePlacement] = [], laneEnds: [Date] = []
+        func flush() {
+            let count = laneEnds.count
+            result += group.map { var value = $0; value.lanes = count; return value }
+            group = []; laneEnds = []
+        }
+        for event in sorted {
+            let start = max(event.start, range.start)
+            let end = min(max(event.end, start.addingTimeInterval(1800)), range.end)
+            if let last = laneEnds.max(), start >= last { flush() }
+            let lane = laneEnds.firstIndex { $0 <= start } ?? laneEnds.count
+            if lane == laneEnds.count { laneEnds.append(end) } else { laneEnds[lane] = end }
+            group.append(.init(event: event, start: start, end: end, lane: lane, lanes: 1))
+        }
+        flush(); return result
+    }
+}
 public enum SleepMath {
     /// Merge overlapping sources (e.g. watch + ring) instead of double counting sleep.
     public static func hours(intervals: [DateInterval], within window: DateInterval) -> Double {
