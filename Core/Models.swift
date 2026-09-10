@@ -5,7 +5,7 @@ import Security
 public enum AppleSignInNonce {
     public static func make(length: Int = 32) throws -> String {
         precondition(length > 0)
-        let characters = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        let characters = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._")
         var result = ""
         while result.count < length {
             var byte: UInt8 = 0

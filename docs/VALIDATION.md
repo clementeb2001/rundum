@@ -1,5 +1,18 @@
 # Prüfprotokoll · 2026-09-08
 
+## Vollständige Code-Prüfung (Fehler, Sicherheit, Verbesserungen) · 2026-09-10
+
+Statische Gesamtprüfung des Quellcodes (App, Core, Widget, Backend-SQL, Konfiguration und Projektgenerator) in der Remote-Umgebung. Kein Swift-/Xcode-Toolchain in dieser Linux-Umgebung verfügbar; Core- und UI-Tests sowie Build wurden **nicht** ausgeführt und müssen in Xcode bestätigt werden.
+
+- **Behobener Fehler:** Das Zeichenalphabet für den Apple-Sign-in-Nonce (`Core/Models.swift`) enthielt versehentlich kein großes „W“ (`…UVXYZ…` statt Apples kanonischem `…UVWXYZ…`). Alle übrigen 25 Groß- und 26 Kleinbuchstaben waren vorhanden. Auswirkung gering (das Alphabet umfasste zufällig 64 Zeichen, wodurch die Ablehnungsauswahl unverzerrt blieb und die Entropie erhalten war); der Nonce konnte lediglich nie ein großes „W“ enthalten. Quellcode und der gespiegelte Core-Test wurden auf das vollständige Alphabet korrigiert. Nach dem Fix umfasst das Alphabet 65 Zeichen; die Ablehnungsauswahl (`byte < characters.count`) bleibt unverzerrt.
+- **Sicherheit – keine Befunde:** Sitzungstoken und Cloud-Konfiguration liegen im Schlüsselbund mit `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`. Keine Geheimnisse im Repository; `.gitignore` deckt Schlüssel, Profile und lokale Konfiguration ab. Supabase-URL wird auf `https` und `*.supabase.co` geprüft; nur öffentliche anon-/publishable-Schlüssel werden akzeptiert, `service_role` wird abgelehnt. Apple-Sign-in nutzt gehashten Nonce an Apple und Roh-Nonce an Supabase (korrektes Muster); das Apple-ID-Passwort erreicht die App nie. Backend-RLS und `security definer`-RPCs mit `set search_path = ''` sind konsequent umgesetzt; Serverseite vertraut keinem clientseitigen Pro-Flag (ein Kalender pro Konto wird in der DB erzwungen). Wetterdiagnose gibt keine Koordinaten, Token oder Fehler-Payloads aus; Standort wird nur auf Wunsch, einmalig und auf zwei Nachkommastellen gerundet verwendet. Gesundheitsdaten verlassen das Gerät nicht.
+- **Beobachtungen / Verbesserungsvorschläge (nicht geändert):**
+  1. `HealthService.load()` schluckt Fehler der Einzelabfragen (`sum`/`samples`), sodass eine vorübergehende HealthKit-Störung wie „keine Daten“ (—) statt als Fehlerzustand erscheint. Bewusst gemäß Datenphilosophie, aber Störung und fehlende Aufzeichnung sind nicht unterscheidbar.
+  2. `CloudService.loadCalendars()` interpoliert ISO-8601-Datumswerte ungeprüft in die PostgREST-Query. Funktioniert (UTC-`Z`, keine `+`-Offsets), Prozentkodierung wäre robuster.
+  3. `CalendarService` fügt im `init` einen `NotificationCenter`-Beobachter hinzu, der nie entfernt wird; unkritisch, da das Objekt die App-Lebensdauer besitzt.
+  4. Client-seitiges `isPro` steuert nur lokale UI (Kartenanzahl/-größen), keine Serverressource; serverseitig geprüfte Abos sind laut Roadmap noch offen.
+  5. `Info.plist`: keine iPad-spezifischen `UISupportedInterfaceOrientations~ipad`; erklärt die dokumentierte Orientierungswarnung im Release-Build. Kein nachgewiesener Absturz.
+
 ## Native Apple-Anmeldung · 2026-09-10
 
 - Native „Mit Apple anmelden“-Schaltfläche mit AuthenticationServices ergänzt. Ein kryptografisch sicherer Nonce wird SHA-256-gehasht an Apple übergeben; das ursprüngliche Nonce und Apples ID-Token werden anschließend direkt bei Supabase gegen eine Sitzung eingetauscht.
