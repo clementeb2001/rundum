@@ -69,10 +69,30 @@ final class CardFlowTests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         XCTAssertTrue(row.label.contains("Pink")); row.tap()
         let restored = app.buttons["card-color-pink"]
+        for _ in 0..<7 where !restored.isHittable { app.swipeUp() }
         XCTAssertTrue(restored.waitForExistence(timeout: 5))
-        for _ in 0..<4 where !restored.isHittable { app.swipeUp() }
         XCTAssertTrue(restored.isSelected)
         screenshot("card-personalization-restored")
+    }
+    func testWidgetWidthsPlaceTwoCardsSideBySide() {
+        func width(_ kind: String, _ value: String) {
+            app.buttons["dashboard-customize"].tap()
+            let row = app.buttons["customize-card-" + kind]
+            XCTAssertTrue(row.waitForExistence(timeout: 5)); row.tap()
+            let picker = app.segmentedControls["card-width"]
+            for _ in 0..<7 where !picker.isHittable { app.swipeUp() }
+            XCTAssertTrue(picker.waitForExistence(timeout: 5)); picker.buttons[value].tap()
+            app.terminate(); app.launch()
+        }
+        width("calendar", "Halb"); width("steps", "Halb")
+        let first = app.buttons["dashboard-card-calendar"]
+        let second = app.buttons["dashboard-card-steps"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5)); XCTAssertTrue(second.exists)
+        XCTAssertEqual(first.frame.minY, second.frame.minY, accuracy: 3)
+        XCTAssertGreaterThan(abs(first.frame.minX - second.frame.minX), 50)
+        XCTAssertLessThan(first.frame.width, app.frame.width * 0.6)
+        screenshot("two-half-width-widgets")
+        width("calendar", "Ganz"); width("steps", "Ganz")
     }
     func testHealthDetailShowsPermissionsWithoutInventedValues() {
         let steps = app.buttons["dashboard-card-steps"]

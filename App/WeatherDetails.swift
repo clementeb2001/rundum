@@ -6,14 +6,16 @@ func weatherTemperature(_ value: Measurement<UnitTemperature>) -> String {
     value.converted(to: .celsius).value.formatted(.number.precision(.fractionLength(0))) + "°"
 }
 struct WeatherCredits: View {
+    var compact = false
     @EnvironmentObject var model: WeatherModel
     @EnvironmentObject var state: AppState
     @Environment(\.colorScheme) private var scheme
     var body: some View {
         if let attribution = model.attribution {
-            HStack {
+            let layout = compact ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4)) : AnyLayout(HStackLayout())
+            layout {
                 AsyncImage(url: scheme == .dark ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL) { image in image.resizable().scaledToFit() } placeholder: { Text(attribution.serviceName).font(.caption) }.frame(width: 96, height: 22).accessibilityLabel(attribution.serviceName)
-                Spacer()
+                if !compact { Spacer() }
                 Link(state.copy("Datenquellen", "Sources", "Data sources"), destination: attribution.legalPageURL).font(.caption)
             }
         }

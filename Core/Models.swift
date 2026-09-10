@@ -17,6 +17,7 @@ public struct CardKind: RawRepresentable, Codable, Hashable, Identifiable {
     }
 }
 public enum CardSize: String, Codable, CaseIterable { case small, medium, large }
+public enum CardWidth: String, Codable, CaseIterable { case full, half }
 public enum CardTint: String, Codable, CaseIterable { case automatic, coral, orange, gold, green, teal, blue, indigo, pink }
 public enum CardSurface: String, Codable, CaseIterable { case plain, tinted, gradient }
 public enum CardPresentation: String, Codable, CaseIterable { case value, bars, line, ring, agenda }
@@ -40,17 +41,18 @@ public extension CardKind {
 public struct DashboardCard: Codable, Identifiable, Equatable {
     public var id: CardKind
     public var size: CardSize
+    public var width: CardWidth
     public var tint: CardTint
     public var surface: CardSurface
     public var presentation: CardPresentation
     public var goal: Double?
-    public init(id: CardKind, size: CardSize = .medium, tint: CardTint = .automatic, surface: CardSurface? = nil, presentation: CardPresentation? = nil, goal: Double? = nil) {
-        self.id = id; self.size = size; self.tint = tint
+    public init(id: CardKind, size: CardSize = .medium, tint: CardTint = .automatic, surface: CardSurface? = nil, presentation: CardPresentation? = nil, goal: Double? = nil, width: CardWidth = .full) {
+        self.id = id; self.size = size; self.tint = tint; self.width = width
         self.surface = surface ?? (id == .weather ? .gradient : .plain)
         self.presentation = presentation ?? id.defaultPresentation
         self.goal = goal ?? id.defaultGoal
     }
-    private enum CodingKeys: String, CodingKey { case id, size, tint, surface, presentation, goal }
+    private enum CodingKeys: String, CodingKey { case id, size, width, tint, surface, presentation, goal }
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let kind = try c.decode(CardKind.self, forKey: .id)
@@ -59,7 +61,8 @@ public struct DashboardCard: Codable, Identifiable, Equatable {
                   tint: (try? c.decode(CardTint.self, forKey: .tint)) ?? .automatic,
                   surface: try? c.decode(CardSurface.self, forKey: .surface),
                   presentation: try? c.decode(CardPresentation.self, forKey: .presentation),
-                  goal: try? c.decode(Double.self, forKey: .goal))
+                  goal: try? c.decode(Double.self, forKey: .goal),
+                  width: (try? c.decode(CardWidth.self, forKey: .width)) ?? .full)
         if !kind.presentations.contains(presentation) { presentation = kind.defaultPresentation }
         if let goal, !goal.isFinite || goal <= 0 { self.goal = kind.defaultGoal }
     }

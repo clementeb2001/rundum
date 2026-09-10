@@ -1,5 +1,14 @@
 # Prüfprotokoll · 2026-09-08
 
+## Widgetartige Karten und halbe Breite · 2026-09-10
+
+- Kartenbreite unabhängig von Höhe/Pro-Größe einstellbar: Ganz oder Halb. Bestehende und unbekannte Breitenwerte laden als Ganz; die Breite bleibt auch kostenlos erhalten. Benachbarte halbe Karten teilen eine Zeile, ohne die Reihenfolge zu ändern; eine einzelne halbe Karte bleibt halb breit. Bei Accessibility-Schriftgrößen wird einspaltig dargestellt.
+- Vorlagen Kompakt, Fokus und Überblick setzen Breite und passende Darstellung; Farbe, Hintergrund und persönliche Ziele bleiben erhalten. Eigene schmale Ansichten für alle sechs Datentypen, keine eingebetteten Widgets anderer Apps. Apple-Wetter-Attribution bleibt auch bei halben Wetterkarten sichtbar.
+- 15 Core-Tests erfolgreich, einschließlich Breitenmigration, Codable-Roundtrip und Erhalt im kostenlosen Layout. Neuer UI-Test bestätigt Breitenwahl über App-Neustarts, zwei Karten auf gleicher Höhe mit getrennten X-Positionen und Rückstellung auf volle Breite. Screenshot visuell geprüft. Signierter iPhone-Build erfolgreich.
+- Kalender-, Health-, Wetter- und Breitentest bestehen im gemeinsamen Lauf. Der Personalisierungstest musste wegen der weiter unten liegenden Farbauswahl zuerst scrollen und besteht anschließend im separaten Wiederholungslauf ebenfalls. Damit wurden alle fünf Bedienungsabläufe erfolgreich geprüft.
+- Echte Daten in jeder kompakten Variante sowie umfassende VoiceOver-/Dynamic-Type-Prüfungen stehen noch aus; fehlende Messwerte werden weiterhin nicht erfunden.
+- Installation dieses Standes auf dem persönlichen iPhone nicht erfolgt: CoreDevice konnte am 10.09. keine Verbindung zum gekoppelten Gerät herstellen (Fehler 4000, Verbindung zurückgesetzt). Vorherige Installationsbestätigungen gelten für ältere Stände.
+
 ## Stundenplan für Tag und Heute · 2026-09-09
 
 - Kalenderdetails: Tag zeigt ausschließlich das Datum und einen vertikal scrollbaren Stundenplan; kein Wochen-/Monatsraster. Woche behält sieben auswählbare Tage. Heute zeigt für den ausgewählten Tag eine kompakte Zeitachse statt der bisherigen Terminliste.

@@ -1,6 +1,15 @@
 import XCTest
 @testable import RundumCore
 final class CoreTests: XCTestCase {
+    func testCardWidthMigrationAndPersistence() throws {
+        let old = try JSONDecoder().decode(DashboardCard.self, from: Data(#"{"id":"weather"}"#.utf8))
+        XCTAssertEqual(old.width, .full)
+        let future = try JSONDecoder().decode(DashboardCard.self, from: Data(#"{"id":"steps","width":"future"}"#.utf8))
+        XCTAssertEqual(future.width, .full)
+        let config = DashboardConfiguration(cards: [.init(id: .weather, width: .half), .init(id: .steps, width: .half)])
+        XCTAssertEqual(try JSONDecoder().decode(DashboardConfiguration.self, from: JSONEncoder().encode(config)), config)
+        XCTAssertEqual(config.visibleCards(isPro: false).map(\.width), [.half, .half])
+    }
     func testTimelineClipsDaysAndExcludesAllDay() {
         let day = Calendar.current.startOfDay(for: Date())
         func event(_ id: String, _ start: Double, _ end: Double, allDay: Bool = false) -> CalendarItem {

@@ -1,4 +1,5 @@
 import SwiftUI
+import WeatherKit
 import Charts
 
 extension Copy {
@@ -311,9 +312,27 @@ struct CardCustomizationView: View {
             Form {
                 Section(state.copy("Live-Vorschau", "Aperçu en direct", "Live preview")) {
                     VStack(spacing: 10) {
-                        CardRegistry.render(card: previewCard, events: calendar.events)
-                        if kind == .weather { WeatherCredits().padding(.horizontal, 12) }
-                    }.listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
+                        if card.width == .half { CompactDashboardCard(card: previewCard, events: calendar.events) }
+                        else { CardRegistry.render(card: previewCard, events: calendar.events) }
+                        if kind == .weather { WeatherCredits(compact: card.width == .half).padding(.horizontal, 12) }
+                    }.frame(maxWidth: card.width == .half ? 180 : .infinity).listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
+                }
+                Section(state.copy("Widget-Vorlagen", "Modèles de widgets", "Widget templates")) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            widgetTemplate("Kompakt", "Compact", "Compact", icon: "square.grid.2x2", width: .half, style: kind.defaultPresentation)
+                            widgetTemplate("Fokus", "Focus", "Focus", icon: "number.square", width: .full, style: kind == .calendar ? .agenda : .value)
+                            widgetTemplate("Überblick", "Aperçu", "Overview", icon: kind == .calendar ? "calendar" : "chart.xyaxis.line", width: .full, style: kind == .calendar ? .agenda : kind == .sleep ? .ring : .line)
+                        }.padding(.vertical, 4)
+                    }
+                    Text(state.copy("Eigene Rundum-Karten mit verbundenen Daten – keine eingebetteten Widgets fremder Apps.", "Cartes Rundum avec les données connectées, pas les widgets d’autres apps.", "Rundum cards using connected data, not embedded widgets from other apps.")).font(.caption).foregroundStyle(.secondary)
+                }
+                Section(state.copy("Breite", "Largeur", "Width")) {
+                    Picker(state.copy("Kartenbreite", "Largeur de carte", "Card width"), selection: binding(\.width)) {
+                        Text(state.copy("Ganz", "Entière", "Full")).tag(CardWidth.full)
+                        Text(state.copy("Halb", "Moitié", "Half")).tag(CardWidth.half)
+                    }.pickerStyle(.segmented).accessibilityIdentifier("card-width")
+                    Text(state.copy("Zwei aufeinanderfolgende halbe Karten stehen nebeneinander. Bei sehr großer Schrift werden sie untereinander angezeigt.", "Deux demi-cartes consécutives s’affichent côte à côte, ou l’une sous l’autre avec une très grande police.", "Two consecutive half-width cards sit side by side. Accessibility text sizes use a single column.")).font(.caption).foregroundStyle(.secondary)
                 }
                 Section(state.copy("Darstellung", "Présentation", "Display")) {
                     Picker(state.copy("Ansicht", "Vue", "View"), selection: binding(\.presentation)) { ForEach(kind.presentations, id: \.self) { Text(state.copy.title($0)).tag($0) } }.accessibilityIdentifier("card-presentation")
@@ -350,4 +369,83 @@ struct CardCustomizationView: View {
                 .sheet(isPresented: $pro) { ProView() }
     }
     private var goalRange: ClosedRange<Double> { kind == .steps ? 1000...40000 : kind == .sleep ? 4...12 : 5...240 }
+    private func widgetTemplate(_ de: String, _ fr: String, _ en: String, icon: String, width: CardWidth, style: CardPresentation) -> some View {
+        Button {
+            binding(\.width).wrappedValue = width; binding(\.presentation).wrappedValue = style
+        } label: {
+            VStack(spacing: 10) {
+                Image(systemName: icon).font(.title).frame(height: 40)
+                Text(state.copy(de, fr, en)).font(.caption.bold())
+            }.frame(width: 100, height: 86).foregroundStyle(card.accent).background(card.accent.opacity(card.width == width && card.presentation == style ? 0.18 : 0.06), in: RoundedRectangle(cornerRadius: 16))
+        }.buttonStyle(.plain)
+    }
+}
+
+/// Dedicated narrow composition: never squeeze a full agenda or hourly forecast into half a row.
+struct CompactDashboardCard: View {
+    let card: DashboardCard
+    let events: [CalendarItem]
+    @EnvironmentObject var state: AppState
+    @EnvironmentObject var health: HealthService
+    @EnvironmentObject var calendar: CalendarService
+    @EnvironmentObject var weather: WeatherModel
+    private var value: Double? {
+        switch card.id { case .steps: return health.steps; case .sleep: return health.sleep; case .heart: return health.heart; case .workouts: return health.workoutMinutes; default: return nil }
+    }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label(state.copy.card(card.id), systemImage: card.id.symbol).font(.caption.weight(.semibold)).foregroundStyle(card.accent).lineLimit(2)
+            if card.id == .weather {
+                if let data = weather.weather {
+                    Text(weather.place.name).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    HStack(spacing: 4) {
+                        Text(weatherTemperature(data.currentWeather.temperature)).font(.system(size: 38, weight: .medium, design: .rounded)).minimumScaleFactor(0.6).lineLimit(1)
+                        Image(systemName: data.currentWeather.symbolName).symbolRenderingMode(.multicolor).font(.title2)
+                    }
+                    Text(data.currentWeather.condition.description).font(.caption).lineLimit(2)
+                    if let day = data.dailyForecast.forecast.first { Text("↑" + weatherTemperature(day.highTemperature) + "  ↓" + weatherTemperature(day.lowTemperature)).font(.caption2).foregroundStyle(.secondary) }
+                    if card.presentation == .line || card.presentation == .bars {
+                        let points = data.hourlyForecast.forecast.filter { $0.date >= Date().addingTimeInterval(-3600) }.prefix(6).map { MetricPoint(date: $0.date, end: $0.date.addingTimeInterval(3600), value: $0.temperature.converted(to: .celsius).value) }
+                        MetricChart(points: points, card: card, compact: true, selected: .constant(nil))
+                        Text(state.copy("Nächste 6 Stunden", "6 prochaines heures", "Next 6 hours")).font(.caption2).foregroundStyle(.secondary)
+                    }
+                    if let updated = weather.updated { Text(updated, format: .dateTime.hour().minute()).font(.caption2).foregroundStyle(.secondary) }
+                } else { Image(systemName: "cloud.sun").font(.largeTitle).foregroundStyle(card.accent); Text(weather.loading ? state.copy("Lädt …", "Chargement…", "Loading…") : state.copy("Nicht verfügbar", "Indisponible", "Unavailable")).font(.caption) }
+            } else if card.id == .calendar {
+                Text(Date(), format: .dateTime.day()).font(.system(size: 42, weight: .bold, design: .rounded)).foregroundStyle(card.accent)
+                Text(Date(), format: .dateTime.weekday(.wide)).font(.caption)
+                let range = HistoryPeriod.day.interval(containing: Date())
+                let local = calendar.history(in: range)
+                if let event = (local + events).filter({ $0.end > Date() && $0.start < range.end }).sorted(by: { $0.start < $1.start }).first {
+                    Text(event.title).font(.caption.bold()).lineLimit(2)
+                    if !event.allDay { Text(event.start, format: .dateTime.hour().minute()).font(.caption2).foregroundStyle(.secondary) }
+                } else { Text(calendar.hasAccess ? state.copy("Keine weiteren Termine", "Aucun autre événement", "No more events") : state.copy("Kalender verbinden", "Connecter le calendrier", "Connect calendar")).font(.caption).foregroundStyle(.secondary) }
+            } else if !health.requested {
+                Image(systemName: card.id.symbol).font(.largeTitle).foregroundStyle(card.accent)
+                Text(state.copy("Health verbinden", "Connecter Santé", "Connect Health")).font(.caption)
+            } else {
+                if card.presentation == .ring {
+                    GoalRing(value: value, goal: card.goal, color: card.accent).frame(maxWidth: .infinity)
+                }
+                Text(metricText(value, kind: card.id)).font(.system(size: card.presentation == .ring ? 24 : 36, weight: .bold, design: .rounded)).minimumScaleFactor(0.6).lineLimit(1)
+                Text(state.copy.unit(card.id)).font(.caption).foregroundStyle(.secondary)
+                if card.presentation == .line || card.presentation == .bars {
+                    MetricChart(points: card.id == .heart ? health.heartToday : health.weekly[card.id] ?? [], card: card, compact: true, selected: .constant(nil))
+                    Text(card.id == .heart ? state.copy("Heute", "Aujourd’hui", "Today") : state.copy("Diese Woche", "Cette semaine", "This week")).font(.caption2).foregroundStyle(.secondary)
+                }
+                if card.id == .sleep { Text(state.copy("Schlafziel", "Objectif de sommeil", "Sleep goal")).font(.caption2).foregroundStyle(.secondary) }
+            }
+            Spacer(minLength: 0)
+        }.frame(maxWidth: .infinity, minHeight: card.size == .small ? 180 : card.size == .large ? 270 : 230, alignment: .topLeading)
+            .padding(14).background {
+                ZStack {
+                    Color(uiColor: .secondarySystemGroupedBackground)
+                    if card.surface == .tinted { card.accent.opacity(0.10) }
+                    if card.surface == .gradient { LinearGradient(colors: [card.accent.opacity(0.20), card.accent.opacity(0.03)], startPoint: .topLeading, endPoint: .bottomTrailing) }
+                }
+            }.clipShape(RoundedRectangle(cornerRadius: 24))
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(card.accent.opacity(0.16), lineWidth: 1))
+            .contentShape(RoundedRectangle(cornerRadius: 24))
+            .task(id: weather.place.id) { if card.id == .weather { await weather.refresh() } }
+    }
 }

@@ -14,6 +14,8 @@ Das Xcode-Projekt und das App-Icon sind bereits enthalten. Nach Änderungen an d
 
 ## Funktionsumfang
 
+**Widgetartige Anordnung:** Unter „Dashboard anpassen“ eine Karte öffnen und eine Vorlage wählen oder unter „Breite“ auf „Halb“ stellen. Zwei aufeinanderfolgende halbe Karten erscheinen nebeneinander. Die Reihenfolge lässt sich weiter ändern. Farben und Hintergründe bleiben individuell; Live-Vorschau zeigt die schmale Variante. Dies sind Rundum-eigene Karten mit angebundenen Daten, keine übernommene Widget-Oberfläche einer fremden App. Breitenwahl ist auch ohne Pro verfügbar; das bestehende Limit aktiver Karten und Pro-Höhen bleiben unverändert.
+
 - Geführte Kartenauswahl ohne Konto, danach anpassbares Dashboard mit sechs Karten: Kalender, Schritte, Schlaf, Puls, Workouts und Wetter.
 - Karten aktivieren/deaktivieren; Drag & Drop im Dashboard und sortierbare Liste mit System-Bedienelementen. Freemium-Limit von zwei sichtbaren Karten; zusätzliche Karten und drei Größen bei verifiziertem StoreKit-Abo.
 - Jede Karte öffnet eine eigene Detailseite. Farben (Automatisch plus acht Farbtöne), drei Hintergründe und je nach Datentyp Werte, Balken, Linien, Zielringe oder Agenda sind pro Karte einstellbar und bleiben nach einem Neustart erhalten. Persönliche Ziele sind Anzeigepräferenzen, keine medizinischen Empfehlungen.

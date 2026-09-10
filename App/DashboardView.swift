@@ -8,6 +8,7 @@ struct DashboardView: View {
     @EnvironmentObject var cloud: CloudService
     @EnvironmentObject var purchases: PurchaseService
     @EnvironmentObject var weather: WeatherModel
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var library = false
     @State private var dragging: CardKind?
     @State private var styling: DashboardCard?
@@ -30,9 +31,13 @@ struct DashboardView: View {
                     if state.configuration.cards.isEmpty {
                         VStack(spacing: 14) { Image(systemName: "square.grid.2x2").font(.largeTitle); Text(state.copy("Hier beginnt dein Überblick.", "Ton aperçu commence ici.", "Your overview starts here.")); Button(state.copy("Karten auswählen", "Choisir les cartes", "Choose cards")) { library = true } }.frame(maxWidth: .infinity).padding(32).background(.background, in: RoundedRectangle(cornerRadius: 24))
                     }
-                    ForEach(state.configuration.visibleCards(isPro: purchases.isPro)) { card in
+                    DashboardWidgetLayout(singleColumn: typeSize.isAccessibilitySize) { ForEach(state.configuration.visibleCards(isPro: purchases.isPro)) { card in
                         VStack(spacing: 10) {
-                            if card.id == .calendar {
+                            if card.width == .half && !typeSize.isAccessibilitySize {
+                                NavigationLink {
+                                    if card.id == .weather { WeatherDetailView() } else { CardDetailView(kind: card.id) }
+                                } label: { CompactDashboardCard(card: card, events: allEvents) }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-" + card.id.rawValue)
+                            } else if card.id == .calendar {
                                 RichMetricCardView(card: card, events: cloud.events.map { event in
                                     CalendarItem(id: event.id.uuidString, title: event.title, start: event.starts_at, end: event.ends_at, allDay: false, source: cloud.calendars.first { $0.id == event.calendar_id }?.name ?? "Rundum")
                                 }, interactiveCalendar: true)
@@ -44,8 +49,9 @@ struct DashboardView: View {
                                 CardRegistry.render(card: card, events: allEvents)
                             }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-" + card.id.rawValue)
                             }
-                            if card.id == .weather { WeatherCredits().padding(.horizontal, 12) }
+                            if card.id == .weather { WeatherCredits(compact: card.width == .half).padding(.horizontal, card.width == .half ? 0 : 12) }
                         }
+                            .layoutValue(key: HalfCardLayoutKey.self, value: card.width == .half)
                             .contextMenu { Button { styling = card } label: { Label(state.copy("Karte gestalten", "Personnaliser la carte", "Customize card"), systemImage: "paintpalette") } }
                             .onDrag { dragging = card.id; return NSItemProvider(object: card.id.rawValue as NSString) }
                             .onDrop(of: [UTType.text], isTargeted: nil) { providers in
@@ -54,7 +60,7 @@ struct DashboardView: View {
                                 withAnimation { state.configuration.cards.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to) }
                                 self.dragging = nil; state.changed(cloud: cloud); return true
                             }
-                    }
+                    } }
                     Button { library = true } label: { Label(state.copy("Dein Dashboard gestalten", "Personnaliser ton tableau de bord", "Make this dashboard yours"), systemImage: "plus.circle").frame(maxWidth: .infinity).padding(18) }.background(Palette.teal.opacity(0.06), in: RoundedRectangle(cornerRadius: 20))
                     Text(state.copy("Gesundheitsdaten bleiben auf deinem iPhone.", "Tes données de santé restent sur ton iPhone.", "Your health data stays on your iPhone.")).font(.caption).foregroundStyle(.secondary).frame(maxWidth: .infinity)
                 }.padding(22).frame(maxWidth: 760)
@@ -67,6 +73,37 @@ struct DashboardView: View {
                     if cloud.session != nil { do { try await cloud.loadCalendars() } catch { cloud.error = error.localizedDescription } }
                     WidgetSnapshot.publish(cards: state.configuration.visibleCards(isPro: purchases.isPro), events: calendar.events, copy: state.copy)
                 }
+        }
+    }
+}
+
+struct HalfCardLayoutKey: LayoutValueKey { static let defaultValue = false }
+/// Packs adjacent half-width cards together without changing the user's order.
+struct DashboardWidgetLayout: Layout {
+    var singleColumn = false
+    private let gap: CGFloat = 14
+    private func frames(width: CGFloat, subviews: Subviews) -> [CGRect] {
+        var frames: [CGRect] = [], index = 0, y: CGFloat = 0
+        while index < subviews.count {
+            let half = subviews[index][HalfCardLayoutKey.self] && !singleColumn
+            let cellWidth = half ? max(1, (width - gap) / 2) : width
+            let firstHeight = subviews[index].sizeThatFits(.init(width: cellWidth, height: nil)).height
+            let paired = half && index + 1 < subviews.count && subviews[index + 1][HalfCardLayoutKey.self]
+            let secondHeight = paired ? subviews[index + 1].sizeThatFits(.init(width: cellWidth, height: nil)).height : 0
+            let height = max(firstHeight, secondHeight)
+            frames.append(.init(x: 0, y: y, width: cellWidth, height: firstHeight))
+            if paired { frames.append(.init(x: cellWidth + gap, y: y, width: cellWidth, height: secondHeight)) }
+            y += height + gap; index += paired ? 2 : 1
+        }
+        return frames
+    }
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 320
+        return .init(width: width, height: frames(width: width, subviews: subviews).map(\.maxY).max() ?? 0)
+    }
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        for (index, frame) in frames(width: bounds.width, subviews: subviews).enumerated() {
+            subviews[index].place(at: .init(x: bounds.minX + frame.minX, y: bounds.minY + frame.minY), anchor: .topLeading, proposal: .init(width: frame.width, height: frame.height))
         }
     }
 }
