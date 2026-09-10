@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import UIKit
 
 struct DashboardView: View {
     @EnvironmentObject var state: AppState
@@ -13,6 +14,7 @@ struct DashboardView: View {
     @State private var library = false
     @State private var editing = false
     @State private var dragging: CardKind?
+    @State private var resizing: CardKind?
     @State private var styling: DashboardCard?
     @Namespace private var cardZoom
     private var sharedItems: [CalendarItem] {
@@ -37,7 +39,7 @@ struct DashboardView: View {
                         Button { library = true } label: { Image(systemName: "slider.horizontal.3").padding(12).background(.background, in: Circle()) }.accessibilityLabel(state.copy("Dashboard anpassen", "Personnaliser le tableau de bord", "Customize dashboard")).accessibilityIdentifier("dashboard-customize")
                     }
                     if editing {
-                        Label(state.copy("Karten halten und verschieben. Die Größe wählst du direkt an der Karte.", "Maintiens et déplace les cartes. Choisis leur taille directement sur la carte.", "Hold and move cards. Choose their size directly on the card."), systemImage: "hand.draw")
+                        Label(state.copy("Karten halten und verschieben. Zieh die rechte untere Ecke, um ihre Größe zu ändern.", "Maintiens et déplace les cartes. Fais glisser le coin inférieur droit pour les redimensionner.", "Hold and move cards. Drag the lower-right corner to resize them."), systemImage: "hand.draw")
                             .font(.footnote).foregroundStyle(.secondary).transition(.move(edge: .top).combined(with: .opacity))
                     }
                     VStack(alignment: .leading, spacing: 7) {
@@ -73,17 +75,21 @@ struct DashboardView: View {
                             }
                             .overlay {
                                 if editing {
-                                    Color.clear
-                                        .contentShape(RoundedRectangle(cornerRadius: 24))
-                                        .onTapGesture { }
-                                        .onDrag {
-                                            dragging = card.id
-                                            return NSItemProvider(object: card.id.rawValue as NSString)
-                                        } preview: {
-                                            CardDragPreview(card: card)
-                                        }
-                                        .accessibilityLabel(state.copy.card(card.id) + " · " + state.copy("zum Verschieben halten", "maintenir pour déplacer", "hold to move"))
-                                        .accessibilityIdentifier("move-card-" + card.id.rawValue)
+                                    GeometryReader { proxy in
+                                        Color.clear
+                                            .frame(width: proxy.size.width, height: max(1, proxy.size.height - 48))
+                                            .frame(maxHeight: .infinity, alignment: .top)
+                                            .contentShape(RoundedRectangle(cornerRadius: 24))
+                                            .onTapGesture { }
+                                            .onDrag {
+                                                dragging = card.id
+                                                return NSItemProvider(object: card.id.rawValue as NSString)
+                                            } preview: {
+                                                CardDragPreview(card: card)
+                                            }
+                                            .accessibilityLabel(state.copy.card(card.id) + " · " + state.copy("zum Verschieben halten", "maintenir pour déplacer", "hold to move"))
+                                            .accessibilityIdentifier("move-card-" + card.id.rawValue)
+                                    }
                                 }
                             }
                             .overlay(alignment: .topLeading) {
@@ -94,14 +100,20 @@ struct DashboardView: View {
                                     }.offset(x: -7, y: -7).accessibilityLabel(state.copy("Karte entfernen", "Supprimer la carte", "Remove card"))
                                 }
                             }
-                            .overlay(alignment: .topTrailing) {
+                            .overlay(alignment: .bottomTrailing) {
                                 if editing {
-                                    CardResizeButton(card: card) { resize(card, to: card.width == .half ? .full : .half) }
-                                        .offset(x: 7, y: -7)
+                                    CardResizeHandle(card: card, isResizing: resizing == card.id) { width in
+                                        resizing = card.id
+                                        resize(card, to: width)
+                                    } commit: { width in
+                                        resize(card, to: width)
+                                        resizing = nil
+                                    }
+                                    .offset(x: 7, y: 7)
                                 }
                             }
                             .layoutValue(key: HalfCardLayoutKey.self, value: card.width == .half)
-                            .cardScrollTransition().scaleEffect(dragging == card.id ? 1.035 : 1)
+                            .cardScrollTransition().scaleEffect(dragging == card.id ? 1.035 : (resizing == card.id ? 1.012 : 1))
                             .animation(reduceMotion ? nil : .rundumSnappy, value: dragging)
                             .zIndex(dragging == card.id ? 2 : 0)
                             .zoomSource(card.id, cardZoom)
@@ -159,20 +171,92 @@ struct CardDragPreview: View {
     }
 }
 
-struct CardResizeButton: View {
+struct CardResizeHandle: View {
     let card: DashboardCard
-    let resize: () -> Void
+    let isResizing: Bool
+    let preview: (CardWidth) -> Void
+    let commit: (CardWidth) -> Void
     @EnvironmentObject var state: AppState
+    @State private var startingWidth: CardWidth?
+    @State private var horizontalDrag: CGFloat = 0
+    private var targetWidth: CardWidth {
+        let start = startingWidth ?? card.width
+        if start == .half { return horizontalDrag > 42 ? .full : .half }
+        return horizontalDrag < -42 ? .half : .full
+    }
     var body: some View {
-        Button(action: resize) {
-            Image(systemName: card.width == .half ? "arrow.up.left.and.arrow.down.right" : "arrow.down.right.and.arrow.up.left")
-                .font(.caption.bold()).foregroundStyle(card.accent)
-                .frame(width: 30, height: 30).background(.regularMaterial, in: Circle()).shadow(color: .black.opacity(0.14), radius: 4, y: 2)
+        ZStack {
+            Circle().fill(.regularMaterial)
+            Image(systemName: "arrow.left.and.right")
+                .font(.caption2.bold()).foregroundStyle(card.accent)
+                .offset(x: min(5, max(-5, horizontalDrag / 14)))
         }
+            .frame(width: 34, height: 34)
+            .overlay { Circle().stroke(.white.opacity(0.72), lineWidth: 1) }
+            .shadow(color: .black.opacity(isResizing ? 0.22 : 0.13), radius: isResizing ? 8 : 4, y: 2)
+            .scaleEffect(isResizing ? 1.12 : 1)
+            .contentShape(Circle())
+            .overlay {
+                ResizePanSurface { translation in
+                    if startingWidth == nil { startingWidth = card.width }
+                    horizontalDrag = translation
+                    preview(targetWidth)
+                } ended: { translation in
+                    horizontalDrag = translation
+                    commit(targetWidth)
+                    startingWidth = nil
+                    horizontalDrag = 0
+                }
+            }
+            .accessibilityElement(children: .ignore)
             .accessibilityLabel(card.width == .half ? state.copy("Karte verbreitern", "Agrandir la carte", "Make card wide") : state.copy("Karte verkleinern", "Réduire la carte", "Make card small"))
             .accessibilityValue(card.width == .half ? state.copy("Klein", "Petite", "Small") : state.copy("Breit", "Large", "Wide"))
+            .accessibilityHint(state.copy("Horizontal ziehen, um die Kartengröße zu ändern", "Glisser horizontalement pour redimensionner la carte", "Drag horizontally to resize the card"))
+            .accessibilityAdjustableAction { direction in
+                switch direction {
+                case .increment: commit(.full)
+                case .decrement: commit(.half)
+                @unknown default: break
+                }
+            }
             .accessibilityIdentifier("resize-card-" + card.id.rawValue)
             .selectionHaptic(card.width)
+    }
+}
+
+struct ResizePanSurface: UIViewRepresentable {
+    let changed: (CGFloat) -> Void
+    let ended: (CGFloat) -> Void
+    func makeCoordinator() -> Coordinator { Coordinator(changed: changed, ended: ended) }
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.isAccessibilityElement = false
+        let recognizer = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handle(_:)))
+        recognizer.maximumNumberOfTouches = 1
+        recognizer.cancelsTouchesInView = true
+        view.addGestureRecognizer(recognizer)
+        return view
+    }
+    func updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.changed = changed
+        context.coordinator.ended = ended
+    }
+    final class Coordinator: NSObject {
+        var changed: (CGFloat) -> Void
+        var ended: (CGFloat) -> Void
+        init(changed: @escaping (CGFloat) -> Void, ended: @escaping (CGFloat) -> Void) {
+            self.changed = changed
+            self.ended = ended
+        }
+        @objc func handle(_ recognizer: UIPanGestureRecognizer) {
+            let translation = recognizer.translation(in: recognizer.view).x
+            switch recognizer.state {
+            case .began, .changed: changed(translation)
+            case .ended, .cancelled: ended(translation)
+            default: break
+            }
+        }
     }
 }
 

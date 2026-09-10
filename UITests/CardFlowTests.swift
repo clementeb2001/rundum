@@ -138,7 +138,8 @@ final class CardFlowTests: XCTestCase {
         app.buttons["dashboard-edit"].tap()
         for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
         XCTAssertTrue(handle.waitForExistence(timeout: 5))
-        handle.tap()
+        var start = handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: -110, dy: 0)), withVelocity: .slow, thenHoldForDuration: 0.1)
         app.terminate(); app.launch()
         let card = app.buttons["dashboard-card-steps"]
         XCTAssertTrue(card.waitForExistence(timeout: 5))
@@ -147,7 +148,9 @@ final class CardFlowTests: XCTestCase {
         screenshot("corner-resize-half")
         app.buttons["dashboard-edit"].tap()
         for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
-        handle.tap()
+        let refreshedHandle = app.descendants(matching: .any)["resize-card-steps"].firstMatch
+        start = refreshedHandle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: 110, dy: 0)), withVelocity: .slow, thenHoldForDuration: 0.1)
         app.terminate(); app.launch()
         XCTAssertGreaterThan(card.frame.width, app.frame.width * 0.7)
         app.buttons["dashboard-edit"].tap()
@@ -163,6 +166,19 @@ final class CardFlowTests: XCTestCase {
         XCTAssertTrue(surface.waitForExistence(timeout: 5))
         XCTAssertTrue(surface.isHittable)
         XCTAssertTrue(app.descendants(matching: .any)["resize-card-steps"].firstMatch.isHittable)
+    }
+    func testResizeHandleSupportsDirectDrag() {
+        app.buttons["dashboard-edit"].tap()
+        let handle = app.descendants(matching: .any)["resize-card-steps"].firstMatch
+        for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
+        XCTAssertTrue(handle.waitForExistence(timeout: 5))
+        let start = handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: start.withOffset(CGVector(dx: -110, dy: 0)), withVelocity: .slow, thenHoldForDuration: 0.1)
+        app.terminate()
+        app.launch()
+        let card = app.buttons["dashboard-card-steps"]
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        XCTAssertLessThan(card.frame.width, app.frame.width * 0.6)
     }
     func testLongPressOpensCardEditingMenu() {
         let card = app.buttons["dashboard-card-steps"]
