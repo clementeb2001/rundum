@@ -1,6 +1,23 @@
 import XCTest
 @testable import RundumCore
 final class CoreTests: XCTestCase {
+    func testCloudConfigurationAcceptsOnlyPublicKeys() {
+        XCTAssertTrue(PublicCloudKeyValidation.accepts("sb_publishable_12345678901234567890"))
+        XCTAssertTrue(PublicCloudKeyValidation.accepts("e30.eyJyb2xlIjoiYW5vbiJ9.signature"))
+        XCTAssertFalse(PublicCloudKeyValidation.accepts("e30.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.signature"))
+        XCTAssertFalse(PublicCloudKeyValidation.accepts("service_role_secret"))
+    }
+    func testCalendarDayIntervalsRemainSeparateAtMidnight() {
+        var calendar = Calendar(identifier: .gregorian); calendar.timeZone = TimeZone(identifier: "Europe/Luxembourg")!
+        let start = calendar.date(from: DateComponents(year: 2026, month: 9, day: 10, hour: 23, minute: 55))!
+        let event = CalendarItem(id: "midnight", title: "midnight", start: start, end: calendar.date(byAdding: .minute, value: 10, to: start)!, allDay: false, source: "Test")
+        let first = CalendarTimelineLayout.placements(events: [event], day: start, calendar: calendar)
+        let nextDay = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: start))!
+        let second = CalendarTimelineLayout.placements(events: [event], day: nextDay, calendar: calendar)
+        XCTAssertEqual(first.first?.end, nextDay)
+        XCTAssertEqual(second.first?.start, nextDay)
+        XCTAssertEqual(first.count, 1); XCTAssertEqual(second.count, 1)
+    }
     func testWidgetSkipsOngoingEventsAndSelectsNearestFutureEvent() {
         let now = Date(timeIntervalSince1970: 10000)
         func event(_ id: String, _ start: Double, _ end: Double) -> CalendarItem {

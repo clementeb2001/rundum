@@ -59,9 +59,9 @@ struct RichWeatherCardView: View {
                 }
             } else {
                 Label(state.copy("Wetter", "Météo", "Weather"), systemImage: "cloud.sun.fill").font(.largeTitle).foregroundStyle(card.accent)
-                Text(model.loading ? state.copy("Wetter wird geladen …", "Chargement de la météo…", "Loading weather…") : state.copy("Wetter gerade nicht verfügbar. Tippe für Details.", "Météo indisponible. Touche pour les détails.", "Weather unavailable. Tap for details.")).font(.subheadline).foregroundStyle(.secondary)
+                Text(model.loading ? state.copy("Wetter wird geladen …", "Chargement de la météo…", "Loading weather…") : model.failed ? state.copy("Keine Verbindung · später erneut versuchen", "Pas de connexion · réessaie plus tard", "No connection · try again later") : state.copy("Noch keine Wetterdaten. Tippe für Details.", "Pas encore de données météo. Touche pour les détails.", "No weather data yet. Tap for details.")).font(.subheadline).foregroundStyle(.secondary)
             }
-            if model.failed { Label(state.copy("Aktualisierung fehlgeschlagen", "Échec de la mise à jour", "Update failed"), systemImage: "exclamationmark.arrow.triangle.2.circlepath").font(.caption).foregroundStyle(.secondary) }
+            if model.failed && model.weather != nil { Label(state.copy("Aktualisierung fehlgeschlagen", "Échec de la mise à jour", "Update failed"), systemImage: "exclamationmark.arrow.triangle.2.circlepath").font(.caption).foregroundStyle(.secondary) }
             if let updated = model.updated { Text(updated, format: .dateTime.day().month().hour().minute()).font(.caption2).foregroundStyle(.secondary) }
         }.padding(.bottom, 28).modifier(CardPanel(card: card)).task(id: model.place.id) { await model.refresh() }
     }

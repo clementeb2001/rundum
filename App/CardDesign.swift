@@ -80,6 +80,18 @@ struct CardHeading: View {
         }
     }
 }
+struct HealthDataStatus: View {
+    @EnvironmentObject var state: AppState
+    @EnvironmentObject var health: HealthService
+    var compact = false
+    var body: some View {
+        Group {
+            if health.loading { Label(state.copy("Wird aktualisiert …", "Actualisation…", "Updating…"), systemImage: "arrow.triangle.2.circlepath") }
+            else if health.error != nil { Label(state.copy("Aktualisierung fehlgeschlagen", "Échec de l’actualisation", "Update failed"), systemImage: "exclamationmark.triangle") }
+            else if let updated = health.updated { Label { HStack(spacing: 3) { Text(state.copy("Aktualisiert", "Actualisé", "Updated")); Text(updated, format: compact ? .dateTime.hour().minute() : .dateTime.day().month().hour().minute()) } } icon: { Image(systemName: "checkmark.circle") } }
+        }.font(.caption2).foregroundStyle(.secondary).accessibilityElement(children: .combine)
+    }
+}
 func metricText(_ value: Double?, kind: CardKind) -> String {
     guard let value else { return "—" }
     return value.formatted(.number.precision(.fractionLength(kind == .sleep ? 1 : 0)))
@@ -211,6 +223,7 @@ struct RichMetricCardView: View {
                     else if card.presentation == .value { Image(systemName: card.id.symbol).font(.system(size: 44)).foregroundStyle(card.accent.opacity(0.25)).accessibilityHidden(true) }
                 }
                 if value == nil { Text(state.copy.missing).font(.caption).foregroundStyle(.secondary) }
+                HealthDataStatus()
                 if card.id != .sleep && (card.presentation == .bars || card.presentation == .line || card.size == .large) {
                     MetricChart(points: card.id == .heart ? health.heartToday : health.weekly[card.id] ?? [], card: card, compact: true, selected: .constant(nil))
                     Text(card.id == .heart ? state.copy("Heute · stündlicher Durchschnitt", "Aujourd’hui · moyenne horaire", "Today · hourly average") : state.copy("Diese Woche", "Cette semaine", "This week")).font(.caption2).foregroundStyle(.secondary)
@@ -411,7 +424,10 @@ struct CompactDashboardCard: View {
                         Text(state.copy("Nächste 6 Stunden", "6 prochaines heures", "Next 6 hours")).font(.caption2).foregroundStyle(.secondary)
                     }
                     if let updated = weather.updated { Text(updated, format: .dateTime.hour().minute()).font(.caption2).foregroundStyle(.secondary) }
-                } else { Image(systemName: "cloud.sun").font(.largeTitle).foregroundStyle(card.accent); Text(weather.loading ? state.copy("Lädt …", "Chargement…", "Loading…") : state.copy("Nicht verfügbar", "Indisponible", "Unavailable")).font(.caption) }
+                } else {
+                    Image(systemName: weather.failed ? "wifi.slash" : "cloud.sun").font(.title2).foregroundStyle(card.accent)
+                    Text(weather.loading ? state.copy("Wetter wird geladen …", "Chargement de la météo…", "Loading weather…") : weather.failed ? state.copy("Keine Verbindung · später erneut versuchen", "Pas de connexion · réessaie plus tard", "No connection · try again later") : state.copy("Noch keine Wetterdaten", "Pas encore de données météo", "No weather data yet")).font(.caption).foregroundStyle(.secondary).lineLimit(3)
+                }
             } else if card.id == .calendar {
                 let layout = card.width == .full ? AnyLayout(HStackLayout(alignment: .top, spacing: 24)) : AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
                 layout {
@@ -429,14 +445,16 @@ struct CompactDashboardCard: View {
                 }.frame(maxWidth: .infinity, alignment: .leading)
                 }.accessibilityIdentifier("calendar-focus-summary")
             } else if !health.requested {
-                Image(systemName: card.id.symbol).font(.largeTitle).foregroundStyle(card.accent)
-                Text(state.copy("Health verbinden", "Connecter Santé", "Connect Health")).font(.caption)
+                Image(systemName: "heart.text.square").font(.title2).foregroundStyle(card.accent)
+                Text(state.copy("Health verbinden", "Connecter Santé", "Connect Health")).font(.caption.bold())
+                Text(state.copy("Für aktuelle Werte tippen", "Touche pour les valeurs actuelles", "Tap for current values")).font(.caption2).foregroundStyle(.secondary)
             } else {
                 if card.presentation == .ring {
                     GoalRing(value: value, goal: card.goal, color: card.accent).frame(maxWidth: .infinity)
                 }
                 Text(metricText(value, kind: card.id)).font(.system(size: card.presentation == .ring ? 24 : 36, weight: .bold, design: .rounded)).minimumScaleFactor(0.6).lineLimit(1)
                 Text(state.copy.unit(card.id)).font(.caption).foregroundStyle(.secondary)
+                HealthDataStatus(compact: true)
                 if card.presentation == .line || card.presentation == .bars {
                     MetricChart(points: card.id == .heart ? health.heartToday : health.weekly[card.id] ?? [], card: card, compact: true, selected: .constant(nil))
                     Text(card.id == .heart ? state.copy("Heute", "Aujourd’hui", "Today") : state.copy("Diese Woche", "Cette semaine", "This week")).font(.caption2).foregroundStyle(.secondary)
@@ -444,7 +462,7 @@ struct CompactDashboardCard: View {
                 if card.id == .sleep { Text(state.copy("Schlafziel", "Objectif de sommeil", "Sleep goal")).font(.caption2).foregroundStyle(.secondary) }
             }
             Spacer(minLength: 0)
-        }.padding(.bottom, card.id == .weather ? 34 : 0).frame(maxWidth: .infinity, minHeight: card.id == .calendar && card.width == .full ? 120 : card.size == .small ? 180 : card.size == .large ? 270 : 230, alignment: .topLeading)
+        }.padding(.bottom, card.id == .weather ? 34 : 0).frame(maxWidth: .infinity, minHeight: compactMinimumHeight, alignment: .topLeading)
             .padding(14).background {
                 ZStack {
                     Color(uiColor: .secondarySystemGroupedBackground)
@@ -455,5 +473,14 @@ struct CompactDashboardCard: View {
             .overlay(RoundedRectangle(cornerRadius: 24).stroke(card.accent.opacity(0.16), lineWidth: 1))
             .contentShape(RoundedRectangle(cornerRadius: 24))
             .task(id: weather.place.id) { if card.id == .weather { await weather.refresh() } }
+    }
+    private var compactMinimumHeight: CGFloat {
+        if card.id == .calendar && card.width == .full { return 120 }
+        if card.width == .half {
+            if card.id == .weather && weather.weather == nil { return 165 }
+            if card.id == .calendar && !calendar.hasAccess { return 165 }
+            if card.id != .calendar && card.id != .weather && value == nil { return card.presentation == .ring ? 205 : 165 }
+        }
+        return card.size == .small ? 180 : card.size == .large ? 270 : 230
     }
 }

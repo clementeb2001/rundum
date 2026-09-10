@@ -54,6 +54,7 @@ import HealthKit
     @Published var heartToday: [MetricPoint] = []
     @Published var weekly: [CardKind: [MetricPoint]] = [:]
     @Published var loading = false
+    @Published var updated: Date?
     @Published var error: String?
     @Published var requested = UserDefaults.standard.bool(forKey: "healthRequested")
     var available: Bool { HKHealthStore.isHealthDataAvailable() }
@@ -89,6 +90,7 @@ import HealthKit
             do { weekly[kind] = try await history(kind: kind, period: .week, date: now).points }
             catch { weekly[kind] = []; self.error = error.localizedDescription }
         }
+        updated = Date()
     }
     private func sum(type: HKQuantityType, unit: HKUnit, start: Date, end: Date) async -> Double? {
         await withCheckedContinuation { continuation in

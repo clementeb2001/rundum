@@ -29,10 +29,12 @@ struct WeatherPlace: Codable, Equatable, Identifiable {
     private var fetchTimeout: Task<Void, Never>?
     private var locationWanted = false
     private var locationTimeout: Task<Void, Never>?
+    private let offlineTest = ProcessInfo.processInfo.arguments.contains("--weather-offline-test")
     func setHistoryAttribution(_ value: WeatherAttribution) { attribution = value }
     override init() {
         place = UserDefaults.standard.data(forKey: "weatherPlace").flatMap { try? JSONDecoder().decode(WeatherPlace.self, from: $0) } ?? .luxembourg
         super.init(); manager.delegate = self; manager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
+        if ProcessInfo.processInfo.arguments.contains("--weather-offline-test") { failed = true; diagnostic = "offline test"; return }
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--weather-diagnostic") {
             Task { await refresh(force: true) }
@@ -47,6 +49,7 @@ struct WeatherPlace: Codable, Equatable, Identifiable {
         if let data = try? JSONEncoder().encode(place) { UserDefaults.standard.set(data, forKey: "weatherPlace") }
     }
     func refresh(force: Bool = false) async {
+        if offlineTest { loading = false; failed = true; diagnostic = "offline test"; return }
         // The shared request belongs to the model, not a dashboard view's lifetime.
         // Opening details must not abandon a request cancelled by SwiftUI navigation.
         if loading && !force { await fetchTask?.value; return }

@@ -73,6 +73,7 @@ struct AuthView: View {
     @State private var register = false
     @State private var busy = false
     @State private var message: String?
+    @State private var setup = false
     var body: some View {
         NavigationStack {
             Form {
@@ -99,9 +100,45 @@ struct AuthView: View {
                     } label: { if busy { ProgressView() } else { Text(register ? state.copy("Konto erstellen", "Créer le compte", "Create account") : state.copy("Anmelden", "Se connecter", "Sign in")) } }.disabled(busy || !email.contains("@") || password.count < (register ? 8 : 1))
                 } else {
                     Notice(text: state.copy("Die Cloud ist für diese App-Version noch nicht eingerichtet. Du kannst das Dashboard und deine lokalen Daten bereits nutzen.", "Le cloud n’est pas encore configuré pour cette version. Le tableau de bord et les données locales sont disponibles.", "Cloud service hasn’t been configured for this build. Your dashboard and local data are already available."))
+                    Button(state.copy("Anmeldung einrichten", "Configurer la connexion", "Set up sign-in")) { setup = true }.accessibilityIdentifier("cloud-setup")
                 }
                 if let message { Text(message).font(.footnote).foregroundStyle(.secondary) }
             }.navigationTitle(state.copy("Willkommen", "Bienvenue", "Welcome"))
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) { Button(state.copy.cancel) { dismiss() } }
+                    if cloud.configured { ToolbarItem(placement: .confirmationAction) { Button { setup = true } label: { Image(systemName: "gearshape") }.accessibilityLabel(state.copy("Cloud-Verbindung ändern", "Modifier la connexion cloud", "Change cloud connection")) } }
+                }
+                .sheet(isPresented: $setup) { CloudSetupView() }
+        }
+    }
+}
+
+struct CloudSetupView: View {
+    @EnvironmentObject var state: AppState
+    @EnvironmentObject var cloud: CloudService
+    @Environment(\.dismiss) private var dismiss
+    @State private var projectURL = ""
+    @State private var publicKey = ""
+    @State private var message: String?
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Label(state.copy("Einmalige Cloud-Einrichtung", "Configuration cloud unique", "One-time cloud setup"), systemImage: "person.crop.circle.badge.plus").font(.headline)
+                    Text(state.copy("Danach kannst du Konten erstellen, dich anmelden und gemeinsame Kalender verwenden.", "Tu pourras ensuite créer un compte, te connecter et partager des calendriers.", "Afterwards you can create accounts, sign in and use shared calendars."))
+                }
+                Section("Supabase") {
+                    TextField(state.copy("Projekt-URL", "URL du projet", "Project URL"), text: $projectURL).keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled().accessibilityIdentifier("cloud-project-url")
+                    SecureField(state.copy("Öffentlicher Schlüssel", "Clé publique", "Public key"), text: $publicKey).textContentType(.password).textInputAutocapitalization(.never).autocorrectionDisabled().accessibilityIdentifier("cloud-public-key")
+                    Text(state.copy("Erlaubt sind nur publishable- oder anon-Schlüssel. Ein geheimer service_role-Schlüssel wird abgelehnt und gehört niemals in die App.", "Seules les clés publishable ou anon sont autorisées. Une clé secrète service_role est refusée.", "Only publishable or anon keys are accepted. A secret service_role key is rejected and must never be put in the app.")).font(.footnote).foregroundStyle(.secondary)
+                    Link(state.copy("Supabase-Projekt öffnen", "Ouvrir le projet Supabase", "Open Supabase project"), destination: URL(string: "https://supabase.com/dashboard/projects")!)
+                }
+                if let message { Notice(text: message) }
+                Button(state.copy("Sicher speichern", "Enregistrer en sécurité", "Save securely")) {
+                    do { try cloud.configure(url: projectURL, publicKey: publicKey); dismiss() }
+                    catch { message = error.localizedDescription }
+                }.disabled(projectURL.isEmpty || publicKey.isEmpty).accessibilityIdentifier("save-cloud-configuration")
+            }.navigationTitle(state.copy("Anmeldung einrichten", "Configurer la connexion", "Set up sign-in"))
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button(state.copy.cancel) { dismiss() } } }
         }
     }

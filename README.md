@@ -34,10 +34,10 @@ Das Xcode-Projekt und das App-Icon sind bereits enthalten. Nach Änderungen an d
 1. Ein eigenes Supabase-Projekt anlegen (für die gewünschte EU-Datenhaltung eine passende Region wählen).
 2. `Backend/001_initial.sql` einmal in einer neuen Datenbank ausführen. Sie richtet Tabellen, RLS, Berechtigungen und geschützte RPCs ein. Bei bestehenden Daten zuerst eine eigene Migration planen.
 3. E-Mail/Passwort-Auth, E-Mail-Bestätigung, Versand und Rate Limits im Projekt konfigurieren. Der Anmeldevorgang verwendet keine frei erfundenen Zugangsdaten.
-4. `Config/Local.xcconfig.example` nach `Config/Local.xcconfig` kopieren und Projekt-URL sowie **öffentlichen anon/publishable key** eintragen. Niemals `service_role` in einer App verwenden. `Local.xcconfig` ist von Git ausgeschlossen.
+4. Projekt-URL und **öffentlichen anon/publishable key** entweder in der App unter **Gemeinsam → Anmeldung einrichten** sicher hinterlegen oder für feste Entwicklungsbuilds `Config/Local.xcconfig.example` nach `Config/Local.xcconfig` kopieren. Niemals `service_role` verwenden; die App lehnt solche Schlüssel ab. `Local.xcconfig` ist von Git ausgeschlossen.
 5. Mit zwei Testkonten Anmeldung, Einladung, RLS, Kontowechsel, Offline-Sync und Löschung prüfen. Das bereitgestellte `Backend/access_checks.sql` enthält zusätzliche transaktionale SQL-Prüfungen für eine isolierte Testdatenbank.
 
-Die Cloud ist im ausgelieferten Projekt noch nicht mit einem echten Dienst verbunden. Ohne diese Konfiguration erklärt die App den Zustand und funktioniert lokal weiter.
+Die Cloud ist im ausgelieferten Projekt noch nicht mit einem echten Dienst verbunden. Ohne diese Konfiguration erklärt die App den Zustand und funktioniert lokal weiter. Nach der einmaligen Einrichtung sind E-Mail-Anmeldung und Kontoerstellung direkt in Rundum verfügbar; für Familienkalender muss zusätzlich Schritt 2 ausgeführt sein.
 
 ## Abonnements
 

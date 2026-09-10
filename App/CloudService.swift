@@ -18,6 +18,7 @@ struct SharedEvent: Codable, Identifiable {
     var created_by: UUID
 }
 struct RemoteConfiguration: Codable { var user_id: UUID; var configuration: DashboardConfiguration }
+private struct LocalCloudConfiguration: Codable { let url: String; let publicKey: String }
 enum CloudFailure: LocalizedError {
     case configuration, message(String)
     var errorDescription: String? { switch self { case .configuration: return "Cloud configuration missing (SUPABASE_URL / SUPABASE_ANON_KEY)."; case .message(let text): return text } }
@@ -41,6 +42,26 @@ enum SessionKeychain {
     }
 }
 
+enum CloudConfigurationStore {
+    private static let service = "app.rundum.cloud-configuration"
+    static func read() -> (url: String, key: String)? {
+        var result: CFTypeRef?
+        let query = [kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: "current", kSecReturnData: true, kSecMatchLimit: kSecMatchLimitOne] as CFDictionary
+        guard SecItemCopyMatching(query, &result) == errSecSuccess, let data = result as? Data,
+              let value = try? JSONDecoder().decode(LocalCloudConfiguration.self, from: data) else { return nil }
+        return (value.url, value.publicKey)
+    }
+    static func save(url: String, key: String) throws {
+        let data = try JSONEncoder().encode(LocalCloudConfiguration(url: url, publicKey: key))
+        let query = [kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: "current"] as [CFString: Any]
+        let update = SecItemUpdate(query as CFDictionary, [kSecValueData: data] as CFDictionary)
+        if update == errSecItemNotFound {
+            var item = query; item[kSecValueData] = data; item[kSecAttrAccessible] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            guard SecItemAdd(item as CFDictionary, nil) == errSecSuccess else { throw CloudFailure.message("Cloud configuration could not be saved") }
+        } else if update != errSecSuccess { throw CloudFailure.message("Cloud configuration could not be saved") }
+    }
+}
+
 @MainActor final class CloudService: ObservableObject {
     @Published private(set) var session: CloudSession?
     @Published var calendars: [SharedCalendar] = []
@@ -48,8 +69,8 @@ enum SessionKeychain {
     @Published var busy = false
     @Published var error: String?
     private var refreshTask: Task<CloudSession, Error>?
-    private var urlString: String { Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String ?? "" }
-    private var apiKey: String { Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String ?? "" }
+    private var urlString: String { CloudConfigurationStore.read()?.url ?? (Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String ?? "") }
+    private var apiKey: String { CloudConfigurationStore.read()?.key ?? (Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String ?? "") }
     var configured: Bool { urlString.hasPrefix("https://") && !apiKey.isEmpty && !apiKey.hasPrefix("$(") }
     static var decoder: JSONDecoder {
         let decoder = JSONDecoder()
@@ -63,6 +84,13 @@ enum SessionKeychain {
     }
     static var encoder: JSONEncoder { let encoder = JSONEncoder(); encoder.dateEncodingStrategy = .iso8601; return encoder }
     init() { if let data = SessionKeychain.read() { session = try? JSONDecoder().decode(CloudSession.self, from: data) } }
+    func configure(url rawURL: String, publicKey rawKey: String) throws {
+        let url = rawURL.trimmingCharacters(in: .whitespacesAndNewlines).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        let key = rawKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let value = URL(string: url), value.scheme == "https", let host = value.host, host.hasSuffix(".supabase.co") else { throw CloudFailure.message("Bitte die HTTPS-Projekt-URL von Supabase eingeben.") }
+        guard PublicCloudKeyValidation.accepts(key) else { throw CloudFailure.message("Nur einen öffentlichen publishable- oder anon-Schlüssel verwenden. Niemals service_role.") }
+        try CloudConfigurationStore.save(url: url, key: key); objectWillChange.send(); error = nil
+    }
     private func persist(_ value: CloudSession) throws { try SessionKeychain.save(JSONEncoder().encode(value)); session = value }
     func signIn(email: String, password: String, register: Bool) async throws -> Bool {
         let data = try await request(register ? "/auth/v1/signup" : "/auth/v1/token?grant_type=password", method: "POST", body: JSONSerialization.data(withJSONObject: ["email": email, "password": password]), authenticated: false)

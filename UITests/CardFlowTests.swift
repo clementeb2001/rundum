@@ -18,7 +18,14 @@ final class CardFlowTests: XCTestCase {
         app.buttons["Anmelden für Sync & Familie"].tap()
         XCTAssertTrue(app.staticTexts["Die Cloud ist für diese App-Version noch nicht eingerichtet. Du kannst das Dashboard und deine lokalen Daten bereits nutzen."].waitForExistence(timeout: 5))
         XCTAssertFalse(app.secureTextFields.firstMatch.exists)
-        app.buttons["Abbrechen"].tap()
+        app.buttons["cloud-setup"].tap()
+        XCTAssertTrue(app.textFields["cloud-project-url"].waitForExistence(timeout: 5))
+        app.textFields["cloud-project-url"].tap(); app.textFields["cloud-project-url"].typeText("https://example.supabase.co")
+        app.secureTextFields["cloud-public-key"].tap(); app.secureTextFields["cloud-public-key"].typeText("service_role_secret")
+        app.buttons["save-cloud-configuration"].tap()
+        XCTAssertTrue(app.staticTexts["Nur einen öffentlichen publishable- oder anon-Schlüssel verwenden. Niemals service_role."].waitForExistence(timeout: 5))
+        app.navigationBars["Anmeldung einrichten"].buttons["Abbrechen"].tap()
+        app.navigationBars["Willkommen"].buttons["Abbrechen"].tap()
         for title in ["Impressum", "Datenschutzerklärung", "Nutzungsbedingungen"] {
             let link = app.buttons[title]
             for _ in 0..<8 where !link.isHittable { app.swipeUp() }
@@ -27,6 +34,31 @@ final class CardFlowTests: XCTestCase {
             app.navigationBars.buttons.element(boundBy: 0).tap()
         }
         screenshot("settings-legal-test-drafts")
+    }
+    func testOfflineWeatherAndLargeTextRemainUsable() {
+        app.terminate()
+        app.launchArguments = ["-onboarded", "YES", "-AppleLanguages", "(de)", "-AppleLocale", "de_LU", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityExtraExtraExtraLarge", "--weather-offline-test"]
+        app.launch()
+        app.buttons["dashboard-customize"].tap()
+        setCard("calendar", enabled: false); setCard("weather", enabled: true)
+        app.buttons["Fertig"].tap()
+        let card = app.buttons["dashboard-card-weather"]
+        for _ in 0..<6 where !card.isHittable { app.swipeUp() }
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Keine Verbindung · später erneut versuchen"].exists)
+        XCTAssertTrue(app.buttons["dashboard-edit"].exists)
+        screenshot("offline-weather-accessibility-text")
+        app.buttons["dashboard-customize"].tap(); setCard("weather", enabled: false); setCard("calendar", enabled: true)
+    }
+    func testProScreenNeverClaimsUnverifiedPurchase() {
+        app.tabBars.buttons["Einstellungen"].tap()
+        let pro = app.buttons["Rundum Pro"]
+        for _ in 0..<6 where !pro.isHittable { app.swipeUp() }
+        XCTAssertTrue(pro.waitForExistence(timeout: 5)); pro.tap()
+        XCTAssertTrue(app.buttons["Käufe wiederherstellen"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Rundum Pro ist aktiv."].exists)
+        XCTAssertTrue(app.staticTexts["Der Kauf ist momentan nicht verfügbar."].exists || app.buttons.matching(NSPredicate(format: "label CONTAINS 'Monat'")).firstMatch.exists)
+        screenshot("pro-unverified-state")
     }
     func testOnboardingCanStartWithoutAccount() {
         app.terminate()

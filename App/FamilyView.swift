@@ -25,7 +25,11 @@ struct FamilyView: View {
                     Text(state.copy("Teile einen eigenen Rundum-Kalender. Deine privaten Kalender bleiben privat.", "Partage un calendrier Rundum. Tes calendriers personnels restent privés.", "Share a dedicated Rundum calendar. Your personal calendars stay private.")).foregroundStyle(.secondary)
                 }
                 if cloud.session == nil {
-                    Section { Button(state.copy("Anmelden & gemeinsam starten", "Se connecter et commencer ensemble", "Sign in & start together")) { auth = true } }
+                    Section {
+                        Label(cloud.configured ? state.copy("Bereit für Anmeldung", "Prêt pour la connexion", "Ready for sign-in") : state.copy("Einrichtung erforderlich", "Configuration requise", "Setup required"), systemImage: cloud.configured ? "checkmark.circle.fill" : "exclamationmark.circle").foregroundColor(cloud.configured ? Palette.teal : Color.secondary)
+                        Text(cloud.configured ? state.copy("Melde dich an oder erstelle ein Konto, um gemeinsame Kalender zu nutzen.", "Connecte-toi ou crée un compte pour partager des calendriers.", "Sign in or create an account to use shared calendars.") : state.copy("Verbinde zuerst einmalig ein Supabase-Projekt. Dein lokales Dashboard funktioniert weiterhin ohne Konto.", "Connecte d’abord un projet Supabase. Ton tableau de bord local reste disponible sans compte.", "First connect a Supabase project once. Your local dashboard keeps working without an account.")).font(.subheadline).foregroundStyle(.secondary)
+                        Button(cloud.configured ? state.copy("Anmelden oder Konto erstellen", "Connexion ou création de compte", "Sign in or create account") : state.copy("Anmeldung einrichten", "Configurer la connexion", "Set up sign-in")) { auth = true }.accessibilityIdentifier("family-auth")
+                    }
                 } else {
                     ForEach(cloud.calendars) { calendar in
                         Section(calendar.name) {

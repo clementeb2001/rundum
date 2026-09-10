@@ -1,5 +1,13 @@
 # Prüfprotokoll · 2026-09-08
 
+## Datenzustände, Belastungstests und Anmeldung · 2026-09-10
+
+- Health-Karten unterscheiden Laden, Fehler, fehlende Werte und letzte erfolgreiche Aktualisierung; fehlende Daten bleiben „—“ statt null. Wetter unterscheidet Laden, Verbindungsfehler und noch nicht geladene Daten.
+- Schmale Leerkarten für Wetter, Kalender und Health nutzen weniger Höhe. Bestehende echte Diagramme und Ringe bleiben unverändert.
+- „Gemeinsam“ zeigt klar „Einrichtung erforderlich“ oder „Bereit für Anmeldung“. Projekt-URL und ausschließlich öffentlicher Supabase-publishable/anon-Schlüssel können in der App eingegeben und im Schlüsselbund gespeichert werden. `service_role` und sonstige Schlüssel werden abgelehnt. Danach sind bestehende E-Mail-Anmeldung und Kontoerstellung erreichbar; ein echtes Projekt und das Backend-Schema sind weiterhin Voraussetzung für den Live-Betrieb.
+- 18 Core-Tests erfolgreich, neu für öffentliche/geheime Cloud-Schlüssel und Termine über Mitternacht. Alle 11 UI-Tests im gemeinsamen Lauf erfolgreich, einschließlich Offline-Wetter mit Accessibility-Schrift, sicherer Cloud-Einrichtung und eines nicht fälschlich aktiv angezeigten Pro-Status.
+- Signierter Release-Build inklusive Widget erfolgreich und auf dem persönlichen iPhone installiert. Automatisches Öffnen war wegen des gesperrten iPhones nicht möglich. Live-Supabase-Anmeldung und echte StoreKit-Zahlung wurden bewusst nicht ausgelöst.
+
 ## Gesamtprüfung des persönlichen Teststands · 2026-09-10
 
 - 16 Core-Tests und sämtliche 9 UI-Tests im gemeinsamen abschließenden Lauf erfolgreich. Signierter Release-Build inklusive Widget erfolgreich; fünf Plist-/Entitlement-/Privacy-Dateien syntaktisch geprüft.
