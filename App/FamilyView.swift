@@ -142,6 +142,7 @@ struct SharedCalendarSettingsView: View {
     @State private var invite: String?
     @State private var busy = false
     @State private var removing: SharedCalendar?
+    @State private var importTarget: SharedCalendar?
 
     private var active: SharedCalendar? { cloud.calendars.first { $0.id == activeCalendarID } ?? cloud.calendars.first }
     private var owningAny: Bool { cloud.calendars.contains { $0.owner_id == cloud.session?.user.id } }
@@ -176,6 +177,12 @@ struct SharedCalendarSettingsView: View {
                             Text(state.copy("Einmaliger Code · 7 Tage gültig. Ein neuer Code ersetzt den vorherigen.", "Code à usage unique · valable 7 jours. Un nouveau code remplace le précédent.", "One-use code · valid for 7 days. A new code replaces the previous one.")).font(.footnote).foregroundStyle(.secondary)
                         }
                     }
+                    Section(state.copy("Termine importieren", "Importer des événements", "Import events")) {
+                        Button { importTarget = active } label: {
+                            Label(state.copy("Aus iPhone-Kalender importieren", "Importer depuis le calendrier iPhone", "Import from iPhone calendar"), systemImage: "square.and.arrow.down")
+                        }.accessibilityIdentifier("family-import")
+                        Text(state.copy("Kopiert Termine eines iPhone-Kalenders in diesen gemeinsamen Kalender. Apps wie SuperShift erscheinen hier, sobald sie mit dem iOS-Kalender synchronisiert sind.", "Copie les événements d’un calendrier iPhone dans ce calendrier partagé. Les apps comme SuperShift apparaissent ici dès qu’elles se synchronisent avec le calendrier iOS.", "Copies events from an iPhone calendar into this shared calendar. Apps like SuperShift appear here once they sync to the iOS calendar.")).font(.footnote).foregroundStyle(.secondary)
+                    }
                 }
                 if !owningAny {
                     Section(state.copy("Neuer gemeinsamer Kalender", "Nouveau calendrier partagé", "New shared calendar")) {
@@ -203,6 +210,7 @@ struct SharedCalendarSettingsView: View {
             .navigationTitle(state.copy("Kalendereinstellungen", "Réglages du calendrier", "Calendar settings"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button(state.copy("Fertig", "Terminé", "Done")) { dismiss() } } }
+            .sheet(item: $importTarget) { target in ImportEventsView(target: target) }
             .confirmationDialog(state.copy("Kalender entfernen? Als Eigentümer löschst du ihn samt Terminen für alle Mitglieder.", "Retirer le calendrier ? En tant que propriétaire, tu le supprimes avec ses événements pour tous les membres.", "Remove calendar? As owner, this deletes it and its events for all members."), isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }), titleVisibility: .visible) {
                 Button(state.copy("Entfernen", "Retirer", "Remove"), role: .destructive) {
                     if let calendar = removing { perform { try await cloud.leaveCalendar(calendar); if activeCalendarID == calendar.id { activeCalendarID = nil } }; dismiss() }
@@ -214,6 +222,115 @@ struct SharedCalendarSettingsView: View {
     private func perform(_ action: @escaping () async throws -> Void) {
         guard !busy else { return }; busy = true; cloud.error = nil
         Task { defer { busy = false }; do { try await action() } catch { cloud.error = error.localizedDescription } }
+    }
+}
+
+/// Copies events from a chosen iPhone calendar (incl. shift apps synced to iOS) into a shared calendar.
+struct ImportEventsView: View {
+    let target: SharedCalendar
+    @EnvironmentObject var state: AppState
+    @EnvironmentObject var cloud: CloudService
+    @EnvironmentObject var calendar: CalendarService
+    @Environment(\.dismiss) private var dismiss
+    @State private var sourceID: String?
+    @State private var weeks = 4
+    @State private var candidates: [CalendarItem] = []
+    @State private var selection: Set<String> = []
+    @State private var loading = false
+    @State private var busy = false
+    @State private var error: String?
+
+    private var range: DateInterval {
+        let start = Calendar.current.startOfDay(for: Date())
+        let end = Calendar.current.date(byAdding: .day, value: weeks * 7, to: start) ?? start
+        return DateInterval(start: start, end: end)
+    }
+    private var effectiveSource: String? { sourceID ?? calendar.calendars.first?.calendarIdentifier }
+    private var reloadKey: String { "\(effectiveSource ?? "")-\(weeks)-\(calendar.hasAccess)" }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(state.copy("Quelle", "Source", "Source")) {
+                    if !calendar.hasAccess {
+                        Button(state.copy("iPhone-Kalender verbinden", "Connecter le calendrier iPhone", "Connect iPhone calendar")) { Task { await calendar.request() } }
+                        Text(state.copy("Erlaube Zugriff, um Termine zu importieren.", "Autorise l’accès pour importer des événements.", "Allow access to import events.")).font(.footnote).foregroundStyle(.secondary)
+                    } else {
+                        Picker(state.copy("Kalender", "Calendrier", "Calendar"), selection: Binding(get: { effectiveSource ?? "" }, set: { sourceID = $0 })) {
+                            ForEach(calendar.calendars, id: \.calendarIdentifier) { Text($0.title).tag($0.calendarIdentifier) }
+                        }
+                        Picker(state.copy("Zeitraum", "Période", "Range"), selection: $weeks) {
+                            Text(state.copy("2 Wochen", "2 semaines", "2 weeks")).tag(2)
+                            Text(state.copy("4 Wochen", "4 semaines", "4 weeks")).tag(4)
+                            Text(state.copy("8 Wochen", "8 semaines", "8 weeks")).tag(8)
+                            Text(state.copy("3 Monate", "3 mois", "3 months")).tag(13)
+                        }
+                    }
+                }
+                if loading { Section { ProgressView() } }
+                else if calendar.hasAccess {
+                    Section {
+                        if candidates.isEmpty {
+                            Text(state.copy("Keine neuen Termine in diesem Zeitraum.", "Aucun nouvel événement dans cette période.", "No new events in this range.")).foregroundStyle(.secondary)
+                        } else {
+                            Button(selection.count == candidates.count ? state.copy("Keine auswählen", "Tout désélectionner", "Select none") : state.copy("Alle auswählen", "Tout sélectionner", "Select all")) {
+                                selection = selection.count == candidates.count ? [] : Set(candidates.map(\.id))
+                            }
+                            ForEach(candidates) { item in
+                                Toggle(isOn: Binding(get: { selection.contains(item.id) }, set: { on in if on { selection.insert(item.id) } else { selection.remove(item.id) } })) {
+                                    VStack(alignment: .leading, spacing: 3) {
+                                        Text(item.title.isEmpty ? state.copy("(Ohne Titel)", "(Sans titre)", "(No title)") : item.title).font(.subheadline.weight(.medium))
+                                        Text(item.start, format: item.allDay ? .dateTime.weekday().day().month() : .dateTime.weekday().day().month().hour().minute()).font(.caption).foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                    } header: { Text(state.copy("Bereits vorhandene Termine werden übersprungen.", "Les événements déjà présents sont ignorés.", "Events already present are skipped.")) }
+                }
+                if let error { Notice(text: error) }
+            }
+            .navigationTitle(state.copy("Termine importieren", "Importer des événements", "Import events"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button(state.copy.cancel) { dismiss() }.disabled(busy) }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(state.copy("Importieren", "Importer", "Import") + (selection.isEmpty ? "" : " (\(selection.count))")) { runImport() }.disabled(selection.isEmpty || busy)
+                }
+            }
+            .task(id: reloadKey) { await reload() }
+        }
+    }
+
+    private func key(_ title: String, _ date: Date) -> String {
+        title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() + "|" + String(Int(date.timeIntervalSince1970 / 60))
+    }
+    private func reload() async {
+        guard calendar.hasAccess, let source = effectiveSource else { candidates = []; selection = []; return }
+        loading = true; error = nil
+        defer { loading = false }
+        let local = calendar.events(in: range, from: source).filter { !$0.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        do {
+            let existing = try await cloud.fetchSharedEvents(calendar: target.id, in: range)
+            let seen = Set(existing.map { key($0.title, $0.starts_at) })
+            candidates = local.filter { !seen.contains(key($0.title, $0.start)) }
+        } catch {
+            self.error = error.localizedDescription
+            candidates = local
+        }
+        selection = Set(candidates.map(\.id))
+    }
+    private func runImport() {
+        guard !busy else { return }; busy = true; error = nil
+        let items = candidates.filter { selection.contains($0.id) }.map { item -> (title: String, start: Date, end: Date) in
+            let title = String(item.title.trimmingCharacters(in: .whitespacesAndNewlines).prefix(300))
+            let end = item.end > item.start ? item.end : item.start.addingTimeInterval(3600)
+            return (title: title, start: item.start, end: end)
+        }
+        Task {
+            defer { busy = false }
+            do { try await cloud.importEvents(items, into: target.id); dismiss() }
+            catch { self.error = error.localizedDescription }
+        }
     }
 }
 

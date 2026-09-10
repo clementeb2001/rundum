@@ -189,6 +189,20 @@ enum CloudConfigurationStore {
         _ = try await request("/rest/v1/shared_events", method: "POST", body: Self.encoder.encode(SharedEvent(id: UUID(), calendar_id: calendar, title: title, starts_at: start, ends_at: end, created_by: user)))
         try await loadCalendars()
     }
+    /// Existing shared events in a range, without touching published state (used for import de-duplication).
+    func fetchSharedEvents(calendar: UUID, in range: DateInterval) async throws -> [SharedEvent] {
+        let start = ISO8601DateFormatter().string(from: range.start)
+        let end = ISO8601DateFormatter().string(from: range.end)
+        let data = try await request("/rest/v1/shared_events?select=*&calendar_id=eq.\(calendar.uuidString)&ends_at=gte.\(start)&starts_at=lt.\(end)&order=starts_at")
+        return try Self.decoder.decode([SharedEvent].self, from: data)
+    }
+    /// Bulk-copies events (e.g. from an iPhone calendar) into a shared calendar in one request.
+    func importEvents(_ items: [(title: String, start: Date, end: Date)], into calendar: UUID) async throws {
+        guard let user = session?.user.id, !items.isEmpty else { return }
+        let payload = items.map { SharedEvent(id: UUID(), calendar_id: calendar, title: $0.title, starts_at: $0.start, ends_at: $0.end, created_by: user) }
+        _ = try await request("/rest/v1/shared_events", method: "POST", body: Self.encoder.encode(payload))
+        try await loadCalendars()
+    }
     func deleteEvent(_ event: SharedEvent) async throws {
         _ = try await request("/rest/v1/shared_events?id=eq.\(event.id.uuidString)", method: "DELETE"); try await loadCalendars()
     }

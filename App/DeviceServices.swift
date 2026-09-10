@@ -35,6 +35,13 @@ import HealthKit
                 CalendarItem(id: ($0.eventIdentifier ?? UUID().uuidString) + String($0.startDate.timeIntervalSince1970), title: $0.title ?? "", start: $0.startDate, end: $0.endDate, allDay: $0.isAllDay, source: $0.calendar.title)
             }
     }
+    /// Reads events from one chosen source calendar in a range – used to import into a shared calendar.
+    func events(in range: DateInterval, from calendarID: String) -> [CalendarItem] {
+        guard hasAccess, let source = store.calendars(for: .event).first(where: { $0.calendarIdentifier == calendarID }) else { return [] }
+        return store.events(matching: store.predicateForEvents(withStart: range.start, end: range.end, calendars: [source]))
+            .sorted { $0.startDate < $1.startDate }
+            .map { CalendarItem(id: ($0.eventIdentifier ?? UUID().uuidString) + String($0.startDate.timeIntervalSince1970), title: $0.title ?? "", start: $0.startDate, end: $0.endDate, allDay: $0.isAllDay, source: $0.calendar.title) }
+    }
     func isSelected(_ id: String) -> Bool { !UserDefaults.standard.bool(forKey: "calendarSelectionSet") || selected.contains(id) }
     func toggle(_ id: String, enabled: Bool) {
         if !UserDefaults.standard.bool(forKey: "calendarSelectionSet") { selected = Set(calendars.map(\.calendarIdentifier)) }

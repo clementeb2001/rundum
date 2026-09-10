@@ -1,5 +1,15 @@
 # Prüfprotokoll · 2026-09-08
 
+## Import von iPhone-Kalender-Terminen in den geteilten Kalender · 2026-09-10
+
+Neue Import-Funktion im gemeinsamen Kalender. **Nicht build-verifiziert** (kein Xcode in dieser Umgebung).
+
+- **Import-Ansicht (`ImportEventsView`):** In den Kalendereinstellungen unter „Termine importieren" → „Aus iPhone-Kalender importieren". Auswahl eines Quell-iPhone-Kalenders (EventKit), eines Zeitraums (2/4/8 Wochen, 3 Monate) und der einzelnen Termine (alle/keine). Die gewählten Termine werden in den geteilten Supabase-Kalender kopiert.
+- **SuperShift & andere Apps:** Kein direkter App-Zugriff möglich; der Weg führt über den iOS-Kalender. Sobald SuperShift (oder eine andere App) ihre Schichten in den iOS-Kalender synchronisiert, ist dieser Kalender als Quelle wählbar. Hinweistext in der UI erklärt das.
+- **Duplikate:** Vor dem Import werden bestehende geteilte Termine im Zeitraum geladen und Treffer (gleicher Titel + Startminute) übersprungen, damit wiederholtes Importieren nichts doppelt anlegt.
+- **Server/Geräte:** `CloudService.fetchSharedEvents(calendar:in:)` (ohne Seiteneffekt, für Dedup) und `importEvents(_:into:)` (ein Bulk-POST an PostgREST, danach ein Reload). `CalendarService.events(in:from:)` liest Termine eines gewählten Quell-Kalenders. Titel werden getrimmt/auf 300 Zeichen begrenzt, Enddatum bei Bedarf auf Start+1 h korrigiert (DB verlangt ends_at > starts_at).
+- **Offen (in Xcode/gegen Supabase zu prüfen):** Kompilierung, echter Bulk-Insert unter RLS, Ganztags-Termine (werden als getaktete Termine kopiert, da das Schema kein all-day-Feld hat), sehr große Importmengen.
+
 ## Gemeinsam-Tab aufgeräumt: Verwaltung in eigener Einstellungsansicht · 2026-09-10
 
 Überarbeitung der „Gemeinsam"-Ansicht für ein ruhigeres, eleganteres Layout. **Nicht build-verifiziert** (kein Xcode in dieser Umgebung).
