@@ -67,6 +67,7 @@ enum CloudConfigurationStore {
     @Published private(set) var session: CloudSession?
     @Published var calendars: [SharedCalendar] = []
     @Published var events: [SharedEvent] = []
+    @Published var familyEvents: [SharedEvent] = []
     @Published var busy = false
     @Published var error: String?
     private var refreshTask: Task<CloudSession, Error>?
@@ -109,11 +110,11 @@ enum CloudConfigurationStore {
     }
     func signOut() async {
         _ = try? await request("/auth/v1/logout", method: "POST")
-        try? SessionKeychain.save(nil); session = nil; calendars = []; events = []
+        try? SessionKeychain.save(nil); session = nil; calendars = []; events = []; familyEvents = []
     }
     func deleteAccount() async throws {
         _ = try await request("/rest/v1/rpc/delete_own_account", method: "POST", body: Data("{}".utf8))
-        try SessionKeychain.save(nil); session = nil; calendars = []; events = []
+        try SessionKeychain.save(nil); session = nil; calendars = []; events = []; familyEvents = []
     }
     private func token() async throws -> String {
         guard let session else { throw CloudFailure.message("Please sign in") }
@@ -161,6 +162,15 @@ enum CloudConfigurationStore {
         guard user == session?.user.id else { return }
         calendars = loadedCalendars
         events = try Self.decoder.decode([SharedEvent].self, from: eventsData)
+    }
+    /// Loads shared events for an arbitrary range (used by the Together calendar view, which browses whole months).
+    func loadFamilyEvents(in range: DateInterval) async throws {
+        let user = session?.user.id
+        let start = ISO8601DateFormatter().string(from: range.start)
+        let end = ISO8601DateFormatter().string(from: range.end)
+        let data = try await request("/rest/v1/shared_events?select=*&ends_at=gte.\(start)&starts_at=lt.\(end)&order=starts_at")
+        guard user == session?.user.id else { return }
+        familyEvents = try Self.decoder.decode([SharedEvent].self, from: data)
     }
     func createCalendar(name: String) async throws {
         _ = try await request("/rest/v1/rpc/create_shared_calendar", method: "POST", body: JSONSerialization.data(withJSONObject: ["calendar_name": name]))

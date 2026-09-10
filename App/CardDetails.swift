@@ -229,7 +229,7 @@ struct CardDetailView: View {
 }
 
 /// Stable colors distinguish calendar sources; they do not imply a partner is connected.
-private func calendarSourceColor(_ source: String) -> Color {
+func calendarSourceColor(_ source: String) -> Color {
     let colors: [Color] = [.blue, .purple, .orange, .teal, .pink, .indigo]
     let index = source.utf8.reduce(0) { ($0 * 31 + Int($1)) % colors.count }
     return colors[index]

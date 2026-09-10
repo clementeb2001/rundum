@@ -1,5 +1,16 @@
 # Prüfprotokoll · 2026-09-08
 
+## Gemeinsam-Tab: geteilter Familienkalender mit Monatsansicht · 2026-09-10
+
+Ausbau der „Gemeinsam"-Ansicht von einer reinen Terminliste zu einer echten Kalenderansicht (TimeTree-/FamilyWall-Stil) auf dem bestehenden Supabase-Backend. **Nicht build-verifiziert** (kein Xcode in dieser Umgebung).
+
+- **Monatsraster + Tagesagenda:** Wiederverwendung von `CalendarMonthGrid`; darunter die Termine des gewählten Tages mit Bearbeiten (Tippen) und Löschen (Wischen), farblich nach „Du" vs. Kalendername unterschieden. „Termin hinzufügen" öffnet den `EventComposer` mit vorbelegtem Tag.
+- **Mehrere Kalender:** Auswahl über einen Picker, wenn man mehr als einen geteilten Kalender hat (eigener + beigetretene).
+- **Teilen per Einladung:** Eigentümer erzeugen einen Einladungscode und teilen ihn als fertige Nachricht per `ShareLink` (Nachrichten/WhatsApp/AirDrop). Beitritt weiterhin per Code. Hinweis in der UI: Alle melden sich mit ihrer **Apple-ID** an; eine direkte Freigabe an eine fremde Apple-ID ist über Apple nicht möglich (gleiches Modell wie TimeTree/FamilyWall).
+- **Server:** Neue `CloudService.loadFamilyEvents(in:)` lädt Termine für den sichtbaren Monat (der bisherige `loadCalendars` bleibt für das 7-Tage-Dashboard). `familyEvents` wird bei Ab-/Anmeldung geleert. `calendarSourceColor` von `private` auf intern gestellt, damit Raster und Agenda dieselben Farben nutzen.
+- **Voraussetzung:** Funktioniert nur mit eingerichtetem Supabase-Projekt und Anmeldung; ohne Konto zeigt der Tab weiterhin den Einrichtungs-/Anmeldezustand.
+- **Offen (in Xcode zu prüfen):** Kompilierung, Live-Verhalten gegen ein echtes Supabase-Projekt, Mehrmonats-Navigation, Berechtigungen (Mitglied vs. Eigentümer), sowie ob die wiederverwendete `calendar-month-grid`-Accessibility-ID die Dashboard-UI-Tests stört (Family-Tab ist dort nicht ausgewählt).
+
 ## Design-Feinschliff, Animationen und Erscheinungsbild-Auswahl · 2026-09-10
 
 Umsetzung der in der interaktiven Vorschau gezeigten Effekte im SwiftUI-Code sowie einer neuen Design-Einstellung. **Nicht build-verifiziert:** kein Xcode/Swift-Toolchain in dieser Linux-Umgebung; Kompilierung, Tests und visuelle Prüfung müssen in Xcode erfolgen.
