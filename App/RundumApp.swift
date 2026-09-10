@@ -14,6 +14,7 @@ import SwiftUI
                 .environmentObject(state).environmentObject(calendar).environmentObject(health).environmentObject(cloud).environmentObject(purchases)
                 .environmentObject(weather)
                 .environment(\.locale, Locale(identifier: state.language.rawValue))
+                .preferredColorScheme(state.appearance.colorScheme)
                 .tint(Palette.teal)
                 .task { state.switchAccount(cloud.session?.user.id); await refresh() }
                 .onChange(of: cloud.session?.user.id) { user in state.switchAccount(user); Task { await refresh() } }

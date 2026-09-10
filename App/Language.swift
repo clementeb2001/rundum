@@ -30,4 +30,11 @@ struct Copy {
     func size(_ size: CardSize) -> String {
         switch size { case .small: return self("Klein", "Petit", "Small"); case .medium: return self("Mittel", "Moyen", "Medium"); case .large: return self("Groß", "Grand", "Large") }
     }
+    func title(_ appearance: AppAppearance) -> String {
+        switch appearance {
+        case .system: return self("Automatisch (iPhone)", "Automatique (iPhone)", "Automatic (iPhone)")
+        case .light: return self("Hell", "Clair", "Light")
+        case .dark: return self("Dunkel", "Sombre", "Dark")
+        }
+    }
 }

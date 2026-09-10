@@ -37,12 +37,14 @@ import WidgetKit
     @Published var syncError: String?
     @Published var syncing = false
     @Published var language: Language { didSet { UserDefaults.standard.set(language.rawValue, forKey: "language") } }
+    @Published var appearance: AppAppearance { didSet { UserDefaults.standard.set(appearance.rawValue, forKey: "appearance") } }
     @Published var onboarded: Bool { didSet { UserDefaults.standard.set(onboarded, forKey: "onboarded") } }
     private var storageKey = "dashboard.guest"
     private var syncTask: Task<Void, Never>?
     var copy: Copy { Copy(language: language) }
     init() {
         language = Language(rawValue: UserDefaults.standard.string(forKey: "language") ?? "") ?? .initial
+        appearance = AppAppearance(rawValue: UserDefaults.standard.string(forKey: "appearance") ?? "") ?? .system
         onboarded = UserDefaults.standard.bool(forKey: "onboarded")
         configuration = Self.read("dashboard.guest") ?? .init()
     }

@@ -60,7 +60,11 @@ struct CardPanel: ViewModifier {
             .background {
                 Color(uiColor: .secondarySystemGroupedBackground)
                 if card.surface != .plain {
-                    LinearGradient(colors: [card.accent.opacity(card.surface == .gradient ? 0.18 : 0.10), card.accent.opacity(card.surface == .gradient ? 0.025 : 0.10)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    if card.id == .weather {
+                        WeatherMeshBackground().opacity(0.32)
+                    } else {
+                        LinearGradient(colors: [card.accent.opacity(card.surface == .gradient ? 0.18 : 0.10), card.accent.opacity(card.surface == .gradient ? 0.025 : 0.10)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    }
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
@@ -73,7 +77,7 @@ struct CardHeading: View {
     @EnvironmentObject var state: AppState
     var body: some View {
         HStack(alignment: .center) {
-            Label(state.copy.card(card.id), systemImage: card.id.symbol).font(.subheadline.weight(.semibold)).foregroundStyle(card.accent)
+            Label(state.copy.card(card.id), systemImage: card.id.symbol).font(.subheadline.weight(.semibold)).foregroundStyle(card.accent).pulsingSymbol(card.id == .heart)
             Spacer(minLength: 8)
             Text(subtitle).font(.caption).foregroundStyle(.secondary).lineLimit(2).multilineTextAlignment(.trailing)
             Image(systemName: "chevron.right").font(.caption2.bold()).foregroundStyle(.tertiary).accessibilityHidden(true)
@@ -106,7 +110,7 @@ struct MetricHeadline: View {
             VStack(alignment: .leading, spacing: 2) { number; unit }
         }.accessibilityElement(children: .combine)
     }
-    private var number: some View { Text(metricText(value, kind: card.id)).font(.system(size: card.size == .small ? 34 : 42, weight: .bold, design: .rounded)).monospacedDigit().minimumScaleFactor(0.65).lineLimit(1) }
+    private var number: some View { Text(metricText(value, kind: card.id)).font(.system(size: card.size == .small ? 34 : 42, weight: .bold, design: .rounded)).monospacedDigit().minimumScaleFactor(0.65).lineLimit(1).rollingNumber(value) }
     private var unit: some View { Text(state.copy.unit(card.id)).font(.subheadline.weight(.medium)).foregroundStyle(.secondary) }
 }
 struct GoalRing: View {
@@ -114,18 +118,21 @@ struct GoalRing: View {
     let goal: Double?
     let color: Color
     @EnvironmentObject var state: AppState
+    @State private var shown: Double = 0
     var body: some View {
         let progress = HistoryMath.progress(value: value, goal: goal)
         ZStack {
             Circle().stroke(color.opacity(0.13), lineWidth: 12)
-            if let progress { Circle().trim(from: 0, to: progress).stroke(AngularGradient(colors: [color.opacity(0.5), color], center: .center, startAngle: .degrees(0), endAngle: .degrees(360)), style: StrokeStyle(lineWidth: 12, lineCap: .round)).rotationEffect(.degrees(-90)) }
+            if progress != nil { Circle().trim(from: 0, to: shown).stroke(AngularGradient(colors: [color.opacity(0.5), color], center: .center, startAngle: .degrees(0), endAngle: .degrees(360)), style: StrokeStyle(lineWidth: 12, lineCap: .round)).rotationEffect(.degrees(-90)) }
             VStack(spacing: 2) {
-                Text(progress.map { $0.formatted(.percent.precision(.fractionLength(0))) } ?? "—").font(.system(.title3, design: .rounded, weight: .bold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.5)
+                Text(progress.map { $0.formatted(.percent.precision(.fractionLength(0))) } ?? "—").font(.system(.title3, design: .rounded, weight: .bold)).monospacedDigit().lineLimit(1).minimumScaleFactor(0.5).rollingNumber(progress)
                 Text(state.copy("Ziel", "Objectif", "Goal")).font(.caption2).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.6)
             }
         }.padding(7).frame(width: 106, height: 106).accessibilityElement(children: .ignore)
             .accessibilityLabel(state.copy("Zielerreichung", "Progression", "Goal progress"))
             .accessibilityValue(progress.map { $0.formatted(.percent) } ?? state.copy.missing)
+            .onAppear { withAnimation(.rundumRing) { shown = progress ?? 0 } }
+            .onChange(of: progress) { value in withAnimation(.rundumRing) { shown = value ?? 0 } }
     }
 }
 
@@ -136,6 +143,7 @@ struct MetricChart: View {
     var compact = false
     @Binding var selected: Date?
     @EnvironmentObject var state: AppState
+    @State private var appeared = false
     private var segmented: [(point: MetricPoint, segment: Int)] {
         var segment = 0
         return points.map { point in if point.value == nil { segment += 1 }; return (point, segment) }
@@ -176,6 +184,9 @@ struct MetricChart: View {
                 }
             }
             .frame(height: compact ? 64 : 220)
+            .scaleEffect(x: 1, y: appeared ? 1 : 0.86, anchor: .bottom)
+            .opacity(appeared ? 1 : 0)
+            .onAppear { withAnimation(.rundum) { appeared = true } }
             .accessibilityLabel(state.copy("Verlauf", "Historique", "History") + " · " + state.copy.card(card.id))
         } else {
             HStack(spacing: 10) { Image(systemName: "chart.bar.xaxis").font(.title2); Text(state.copy("Noch keine Werte im Zeitraum", "Aucune valeur pour cette période", "No values in this period yet")).font(.subheadline) }
@@ -211,7 +222,7 @@ struct RichMetricCardView: View {
             } else {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 6) {
-                        MetricHeadline(value: value, card: card)
+                        MetricHeadline(value: value, card: card).shimmering(health.loading && value == nil)
                         if card.id == .heart, let date = health.heartUpdated {
                             Text(date, format: .dateTime.hour().minute()).font(.caption).foregroundStyle(.secondary)
                         } else if let goal = card.goal, card.presentation == .ring {
@@ -257,7 +268,7 @@ struct RichMetricCardView: View {
                 }.frame(maxWidth: .infinity) }.buttonStyle(.plain).disabled(!interactiveCalendar).accessibilityIdentifier("calendar-day-\(offset)")
             }
         }
-        Text(calendarDay, format: .dateTime.weekday(.wide).day().month(.wide)).font(.subheadline.bold()).accessibilityIdentifier("calendar-selected-day")
+        Text(calendarDay, format: .dateTime.weekday(.wide).day().month(.wide)).font(.subheadline.bold()).accessibilityIdentifier("calendar-selected-day").selectionHaptic(calendarDay)
         if !calendar.hasAccess && events.isEmpty {
             Label(state.copy("Kalender verbinden", "Connecter les calendriers", "Connect calendars"), systemImage: "calendar.badge.plus").font(.title3.weight(.semibold))
             Text(state.copy("Deine Termine, an einem Ort. Tippe für Details.", "Tes événements réunis. Touche pour les détails.", "Your events in one place. Tap for details.")).font(.subheadline).foregroundStyle(.secondary)
@@ -413,8 +424,8 @@ struct CompactDashboardCard: View {
                 if let data = weather.weather {
                     Text(weather.place.name).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                     HStack(spacing: 4) {
-                        Text(weatherTemperature(data.currentWeather.temperature)).font(.system(size: 38, weight: .medium, design: .rounded)).minimumScaleFactor(0.6).lineLimit(1)
-                        Image(systemName: data.currentWeather.symbolName).symbolRenderingMode(.multicolor).font(.title2)
+                        Text(weatherTemperature(data.currentWeather.temperature)).font(.system(size: 38, weight: .medium, design: .rounded)).minimumScaleFactor(0.6).lineLimit(1).rollingNumber(weatherTemperature(data.currentWeather.temperature))
+                        Image(systemName: data.currentWeather.symbolName).symbolRenderingMode(.multicolor).font(.title2).bouncingSymbol(on: weather.updated)
                     }
                     Text(data.currentWeather.condition.description).font(.caption).lineLimit(2)
                     if let day = data.dailyForecast.forecast.first { Text("↑" + weatherTemperature(day.highTemperature) + "  ↓" + weatherTemperature(day.lowTemperature)).font(.caption2).foregroundStyle(.secondary) }
@@ -452,7 +463,7 @@ struct CompactDashboardCard: View {
                 if card.presentation == .ring {
                     GoalRing(value: value, goal: card.goal, color: card.accent).frame(maxWidth: .infinity)
                 }
-                Text(metricText(value, kind: card.id)).font(.system(size: card.presentation == .ring ? 24 : 36, weight: .bold, design: .rounded)).minimumScaleFactor(0.6).lineLimit(1)
+                Text(metricText(value, kind: card.id)).font(.system(size: card.presentation == .ring ? 24 : 36, weight: .bold, design: .rounded)).minimumScaleFactor(0.6).lineLimit(1).rollingNumber(value).shimmering(health.loading && value == nil)
                 Text(state.copy.unit(card.id)).font(.caption).foregroundStyle(.secondary)
                 HealthDataStatus(compact: true)
                 if card.presentation == .line || card.presentation == .bars {

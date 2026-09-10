@@ -1,5 +1,23 @@
 # Prüfprotokoll · 2026-09-08
 
+## Design-Feinschliff, Animationen und Erscheinungsbild-Auswahl · 2026-09-10
+
+Umsetzung der in der interaktiven Vorschau gezeigten Effekte im SwiftUI-Code sowie einer neuen Design-Einstellung. **Nicht build-verifiziert:** kein Xcode/Swift-Toolchain in dieser Linux-Umgebung; Kompilierung, Tests und visuelle Prüfung müssen in Xcode erfolgen.
+
+- **Erscheinungsbild wählbar:** Neue Einstellung „Darstellung“ mit Hell / Dunkel / Automatisch (folgt dem iPhone). Persistiert in `UserDefaults` (`appearance`), angewendet app-weit über `.preferredColorScheme(state.appearance.colorScheme)` in `RundumApp`. `AppAppearance` in `App/Motion.swift`, lokalisierte Titel in `Copy` (de/fr/en).
+- **Neue Datei `App/Motion.swift`** mit wiederverwendbaren, versionssicheren Helfern; im Xcode-Projekt (`project.pbxproj`) in allen vier Abschnitten registriert. Umgesetzte Effekte:
+  1. **Rollende Zahlen** – `.contentTransition(.numericText())` (iOS 16) auf Metrik-Kennzahlen, Wetter-Temperatur, Zielring-Prozent.
+  2. **Zielring füllt sich** – `GoalRing` animiert `trim` beim Erscheinen/Ändern (`.rundumRing`).
+  3. **Feder-Übergänge** – Bearbeiten/Resize/Sortieren nutzen `.spring`-basierte `Animation.rundum(Snappy)` statt fester `easeInOut`.
+  4. **Symbol-Effekte** – Herz `.symbolEffect(.pulse)`, Wetter `.symbolEffect(.bounce)` (iOS 17, sonst No-op).
+  5. **Scroll-Reaktion** – Karten `.scrollTransition` (iOS 17, sonst No-op).
+  6. **Zoom Karte→Detail** – `.matchedTransitionSource` + `.navigationTransition(.zoom)` (iOS 18, sonst normaler Push) via `@Namespace` im Dashboard.
+  7. **Chart-Aufbau** – `MetricChart` skaliert/blendet beim Erscheinen ein.
+  8. **Wetter-Farbverlauf** – `MeshGradient` im Wetter-`CardPanel` (iOS 18), sonst linearer Verlauf als Fallback.
+  9. **Skeleton-Shimmer** – `Shimmer`-Modifier auf Health-Kennzahlen während des Ladens (iOS 16).
+  10. **Haptik** – `.sensoryFeedback` bei Bearbeiten-Umschalten, Resize und Tagesauswahl (iOS 17, sonst No-op).
+- **Offen (in Xcode zu prüfen):** Kompilierung aller Targets, Core-/UI-Tests, visuelle Wirkung von MeshGradient-Kontrast, Zoom-Übergang auf Gerät sowie `prefers-reduced-motion`-Verhalten. Bestehende UI-Tests referenzieren die gleichen Accessibility-IDs; keine wurden entfernt.
+
 ## Vollständige Code-Prüfung (Fehler, Sicherheit, Verbesserungen) · 2026-09-10
 
 Statische Gesamtprüfung des Quellcodes (App, Core, Widget, Backend-SQL, Konfiguration und Projektgenerator) in der Remote-Umgebung. Kein Swift-/Xcode-Toolchain in dieser Linux-Umgebung verfügbar; Core- und UI-Tests sowie Build wurden **nicht** ausgeführt und müssen in Xcode bestätigt werden.
