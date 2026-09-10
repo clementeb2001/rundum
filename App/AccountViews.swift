@@ -30,6 +30,12 @@ struct SettingsView: View {
                     if let error = cloud.error { Notice(text: error) }
                 }
                 Section(state.copy("Sprache", "Langue", "Language")) { Picker(state.copy("Sprache", "Langue", "Language"), selection: $state.language) { ForEach(Language.allCases) { Text($0.title).tag($0) } } }
+                Section(state.copy("Darstellung", "Apparence", "Appearance")) {
+                    Picker(state.copy("Design", "Thème", "Theme"), selection: $state.appearance) {
+                        ForEach(AppAppearance.allCases) { Text(state.copy.title($0)).tag($0) }
+                    }
+                    Text(state.copy("„Automatisch“ folgt der Hell-/Dunkel-Einstellung deines iPhones.", "« Automatique » suit le réglage clair/sombre de ton iPhone.", "“Automatic” follows your iPhone’s light/dark setting.")).font(.footnote).foregroundStyle(.secondary)
+                }
                 Section(state.copy("Kalenderquellen", "Sources de calendrier", "Calendar sources")) {
                     if calendar.hasAccess {
                         ForEach(calendar.calendars, id: \.calendarIdentifier) { source in Toggle(source.title, isOn: Binding(get: { calendar.isSelected(source.calendarIdentifier) }, set: { calendar.toggle(source.calendarIdentifier, enabled: $0) })) }

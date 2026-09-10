@@ -28,6 +28,7 @@
 		B0549C7360EF5E3D3488BF94 /* RundumWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B831D1796ED3C0EA907DD342 /* RundumWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C12F5893D854D90BDA4028EF /* App/AccountViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5DAF5FFEA25FCA0FD7FFEF /* App/AccountViews.swift */; };
 		C460AA7673D42FED4371F270 /* App/AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18EB29EAE81942149C02254 /* App/AppState.swift */; };
+		2483484A01054A7D7DAC93F5 /* App/Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99F947243DDE06E847D823EE /* App/Motion.swift */; };
 		D51D3F0FB3DEAAEA50B70633 /* App/Resources/PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8498BC6691F72B28A9D329A3 /* App/Resources/PrivacyInfo.xcprivacy */; };
 		E015E5CDC9677EF88A240670 /* Core/Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794CDC2D1145E96C6B308B68 /* Core/Models.swift */; };
 /* End PBXBuildFile section */
@@ -81,6 +82,7 @@
 		B858A87C07B04C4568F51B0D /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = App/Resources/fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		BEC02255AE53D41309B9C7A9 /* App/FamilyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/FamilyView.swift; sourceTree = "<group>"; };
 		C18EB29EAE81942149C02254 /* App/AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppState.swift; sourceTree = "<group>"; };
+		99F947243DDE06E847D823EE /* App/Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/Motion.swift; sourceTree = "<group>"; };
 		CF4EABC66127BC221EA30BB4 /* App/CloudService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/CloudService.swift; sourceTree = "<group>"; };
 		D8EDF12577DBD050AD5F4D1D /* Widget/RundumWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Widget/RundumWidget.swift; sourceTree = "<group>"; };
 		DD5DAF5FFEA25FCA0FD7FFEF /* App/AccountViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AccountViews.swift; sourceTree = "<group>"; };
@@ -96,6 +98,7 @@
 				2721CA1AC4587BDF99F89E71 /* Config/Rundum.storekit */,
 				DD5DAF5FFEA25FCA0FD7FFEF /* App/AccountViews.swift */,
 				C18EB29EAE81942149C02254 /* App/AppState.swift */,
+				99F947243DDE06E847D823EE /* App/Motion.swift */,
 				53F510FCE60AFC6F3D4D9DD7 /* App/CardRegistry.swift */,
 				CF4EABC66127BC221EA30BB4 /* App/CloudService.swift */,
 				6D15C7CA423DE64384AAE98E /* App/DashboardView.swift */,
@@ -227,6 +230,7 @@
 			files = (
 				C12F5893D854D90BDA4028EF /* App/AccountViews.swift in Sources */,
 				C460AA7673D42FED4371F270 /* App/AppState.swift in Sources */,
+				2483484A01054A7D7DAC93F5 /* App/Motion.swift in Sources */,
 				8870A5A8C15829A8CA67BF7A /* App/CardRegistry.swift in Sources */,
 				AE8418E73EBFA59DD4BA4CC6 /* App/CloudService.swift in Sources */,
 				035E021CC3437282F8BB50CE /* App/DashboardView.swift in Sources */,

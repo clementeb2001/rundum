@@ -30,14 +30,14 @@ struct RichWeatherCardView: View {
             if let weather = model.weather {
                 HStack(alignment: .center) {
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(weatherTemperature(weather.currentWeather.temperature)).font(.system(size: card.size == .small ? 48 : 64, weight: .light, design: .rounded)).monospacedDigit()
+                        Text(weatherTemperature(weather.currentWeather.temperature)).font(.system(size: card.size == .small ? 48 : 64, weight: .light, design: .rounded)).monospacedDigit().rollingNumber(weatherTemperature(weather.currentWeather.temperature))
                         Text(weather.currentWeather.condition.description).font(.subheadline.weight(.medium))
                         if let day = weather.dailyForecast.forecast.first {
                             Text("↑ " + weatherTemperature(day.highTemperature) + "   ↓ " + weatherTemperature(day.lowTemperature)).font(.caption).foregroundStyle(.secondary)
                         }
                     }
                     Spacer(minLength: 8)
-                    Image(systemName: weather.currentWeather.symbolName).symbolRenderingMode(.multicolor).font(.system(size: 58)).padding(12).background(card.accent.opacity(0.08), in: Circle()).accessibilityHidden(true)
+                    Image(systemName: weather.currentWeather.symbolName).symbolRenderingMode(.multicolor).font(.system(size: 58)).padding(12).background(card.accent.opacity(0.08), in: Circle()).accessibilityHidden(true).bouncingSymbol(on: model.updated)
                 }
                 if card.size != .small {
                     Divider()

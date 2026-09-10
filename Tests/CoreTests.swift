@@ -7,7 +7,7 @@ final class CoreTests: XCTestCase {
     func testAppleNonceUsesRequestedLengthAndAllowedCharacters() throws {
         let nonce = try AppleSignInNonce.make(length: 48)
         XCTAssertEqual(nonce.count, 48)
-        XCTAssertTrue(nonce.allSatisfy { "0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._".contains($0) })
+        XCTAssertTrue(nonce.allSatisfy { "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._".contains($0) })
     }
     func testCloudConfigurationAcceptsOnlyPublicKeys() {
         XCTAssertTrue(PublicCloudKeyValidation.accepts("sb_publishable_12345678901234567890"))

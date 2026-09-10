@@ -13,6 +13,7 @@ struct DashboardView: View {
     @State private var editing = false
     @State private var dragging: CardKind?
     @State private var styling: DashboardCard?
+    @Namespace private var cardZoom
     private var allEvents: [CalendarItem] {
         let now = Date()
         let end = Calendar.current.date(byAdding: .day, value: 7, to: now) ?? now
@@ -24,9 +25,9 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     HStack {
                         Brand(); Spacer()
-                        Button { withAnimation(.easeInOut(duration: 0.2)) { editing.toggle() } } label: {
+                        Button { withAnimation(.rundumSnappy) { editing.toggle() } } label: {
                             Image(systemName: editing ? "checkmark" : "pencil").frame(width: 44, height: 44).background(.background, in: Circle())
-                        }.accessibilityLabel(editing ? state.copy("Fertig", "Terminé", "Done") : state.copy("Dashboard bearbeiten", "Modifier le tableau de bord", "Edit dashboard")).accessibilityIdentifier("dashboard-edit")
+                        }.accessibilityLabel(editing ? state.copy("Fertig", "Terminé", "Done") : state.copy("Dashboard bearbeiten", "Modifier le tableau de bord", "Edit dashboard")).accessibilityIdentifier("dashboard-edit").selectionHaptic(editing)
                         Button { library = true } label: { Image(systemName: "slider.horizontal.3").padding(12).background(.background, in: Circle()) }.accessibilityLabel(state.copy("Dashboard anpassen", "Personnaliser le tableau de bord", "Customize dashboard")).accessibilityIdentifier("dashboard-customize")
                     }
                     if editing { Text(state.copy("An der Ecke ziehen zum Vergrößern oder Verkleinern.", "Glisse le coin pour changer la largeur.", "Drag the corner to change the width.")).font(.footnote).foregroundStyle(.secondary) }
@@ -43,7 +44,7 @@ struct DashboardView: View {
                         VStack(spacing: 10) {
                             if (card.width == .half && !typeSize.isAccessibilitySize) || (card.id == .calendar && card.presentation == .value) {
                                 NavigationLink {
-                                    if card.id == .weather { WeatherDetailView() } else { CardDetailView(kind: card.id) }
+                                    Group { if card.id == .weather { WeatherDetailView() } else { CardDetailView(kind: card.id) } }.zoomDestination(card.id, cardZoom)
                                 } label: { CompactDashboardCard(card: card, events: allEvents) }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-" + card.id.rawValue)
                             } else if card.id == .calendar {
                                 RichMetricCardView(card: card, events: cloud.events.map { event in
@@ -51,8 +52,10 @@ struct DashboardView: View {
                                 }, interactiveCalendar: true)
                             } else {
                             NavigationLink {
-                                if card.id == .weather { WeatherDetailView() }
-                                else { CardDetailView(kind: card.id) }
+                                Group {
+                                    if card.id == .weather { WeatherDetailView() }
+                                    else { CardDetailView(kind: card.id) }
+                                }.zoomDestination(card.id, cardZoom)
                             } label: {
                                 CardRegistry.render(card: card, events: allEvents)
                             }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-" + card.id.rawValue)
@@ -66,18 +69,20 @@ struct DashboardView: View {
                                 if editing {
                                 CardResizeHandle(card: card) { width in
                                     guard let index = state.configuration.cards.firstIndex(where: { $0.id == card.id }) else { return }
-                                    withAnimation(.easeInOut(duration: 0.2)) { state.configuration.cards[index].width = width }
+                                    withAnimation(.rundum) { state.configuration.cards[index].width = width }
                                     state.changed(cloud: cloud)
                                 }
                                 }
                             }
                             .layoutValue(key: HalfCardLayoutKey.self, value: card.width == .half)
+                            .cardScrollTransition()
+                            .zoomSource(card.id, cardZoom)
                             .contextMenu { Button { styling = card } label: { Label(state.copy("Karte gestalten", "Personnaliser la carte", "Customize card"), systemImage: "paintpalette") } }
                             .onDrag { dragging = card.id; return NSItemProvider(object: card.id.rawValue as NSString) }
                             .onDrop(of: [UTType.text], isTargeted: nil) { providers in
                                 guard editing, !providers.isEmpty, let dragging, dragging != card.id,
                                       let from = state.configuration.cards.firstIndex(where: { $0.id == dragging }), let to = state.configuration.cards.firstIndex(where: { $0.id == card.id }) else { return false }
-                                withAnimation { state.configuration.cards.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to) }
+                                withAnimation(.rundum) { state.configuration.cards.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to) }
                                 self.dragging = nil; state.changed(cloud: cloud); return true
                             }
                     } }
@@ -124,6 +129,7 @@ struct CardResizeHandle: View {
                 switch direction { case .increment: resize(.full); case .decrement: resize(.half); @unknown default: break }
             }
             .accessibilityIdentifier("resize-card-" + card.id.rawValue)
+            .selectionHaptic(card.width)
     }
 }
 /// Packs adjacent half-width cards together without changing the user's order.
