@@ -1,6 +1,17 @@
 import XCTest
 @testable import RundumCore
 final class CoreTests: XCTestCase {
+    func testWidgetSkipsOngoingEventsAndSelectsNearestFutureEvent() {
+        let now = Date(timeIntervalSince1970: 10000)
+        func event(_ id: String, _ start: Double, _ end: Double) -> CalendarItem {
+            .init(id: id, title: id, start: now.addingTimeInterval(start), end: now.addingTimeInterval(end), allDay: false, source: "Test")
+        }
+        let ongoing = event("ongoing", -600, 600)
+        let future = event("next", 1200, 1800)
+        XCTAssertEqual(WidgetEventSelection.next(in: [ongoing, event("later", 3600, 7200), future], after: now)?.id, "next")
+        XCTAssertNil(WidgetEventSelection.next(in: [ongoing, event("starting-now", 0, 100), event("invalid", 100, 50)], after: now))
+        XCTAssertNil(WidgetEventSelection.next(in: [], after: now))
+    }
     func testCardWidthMigrationAndPersistence() throws {
         let old = try JSONDecoder().decode(DashboardCard.self, from: Data(#"{"id":"weather"}"#.utf8))
         XCTAssertEqual(old.width, .full)

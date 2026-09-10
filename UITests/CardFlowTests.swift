@@ -13,6 +13,32 @@ final class CardFlowTests: XCTestCase {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name; attachment.lifetime = .keepAlways; add(attachment)
     }
+    func testSettingsLegalAndUnavailableCloud() {
+        app.tabBars.buttons["Einstellungen"].tap()
+        app.buttons["Anmelden für Sync & Familie"].tap()
+        XCTAssertTrue(app.staticTexts["Die Cloud ist für diese App-Version noch nicht eingerichtet. Du kannst das Dashboard und deine lokalen Daten bereits nutzen."].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.secureTextFields.firstMatch.exists)
+        app.buttons["Abbrechen"].tap()
+        for title in ["Impressum", "Datenschutzerklärung", "Nutzungsbedingungen"] {
+            let link = app.buttons[title]
+            for _ in 0..<8 where !link.isHittable { app.swipeUp() }
+            XCTAssertTrue(link.waitForExistence(timeout: 5)); link.tap()
+            XCTAssertTrue(app.staticTexts["Testfassung · Stand 08.09.2026"].waitForExistence(timeout: 5))
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        screenshot("settings-legal-test-drafts")
+    }
+    func testOnboardingCanStartWithoutAccount() {
+        app.terminate()
+        app.launchArguments = ["-onboarded", "NO", "-AppleLanguages", "(de)", "-AppleLocale", "de_LU"]
+        app.launch()
+        let start = app.buttons["Mein Rundum starten"]
+        for _ in 0..<6 where !start.isHittable { app.swipeUp() }
+        XCTAssertTrue(start.waitForExistence(timeout: 5)); start.tap()
+        XCTAssertTrue(app.buttons["dashboard-customize"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.secureTextFields.firstMatch.exists)
+        screenshot("onboarding-local-dashboard")
+    }
     private func setCard(_ kind: String, enabled: Bool) {
         let toggle = app.switches["enable-card-" + kind]
         for _ in 0..<5 where !toggle.isHittable { app.swipeUp() }

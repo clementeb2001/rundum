@@ -1,5 +1,13 @@
 # Prüfprotokoll · 2026-09-08
 
+## Gesamtprüfung des persönlichen Teststands · 2026-09-10
+
+- 16 Core-Tests und sämtliche 9 UI-Tests im gemeinsamen abschließenden Lauf erfolgreich. Signierter Release-Build inklusive Widget erfolgreich; fünf Plist-/Entitlement-/Privacy-Dateien syntaktisch geprüft.
+- Widget-Fehler korrigiert: Ein laufender Termin darf den nächsten zukünftigen Termin nicht verdecken. Neuer Regressionstest umfasst unsortierte Termine, laufende/ungültige Termine und leere Listen.
+- Neue UI-Abdeckung für Start ohne Konto und Einstellungen samt nicht verfügbarer Cloud-Anmeldung sowie Impressum, Datenschutz und Nutzungsbedingungen. Bereits vorhandene Kalender-, Health-Leerzustands-, Wetter-Verlaufs-, Personalisierungs- und Größen-Tests bestehen weiterhin.
+- Installation der Korrektur auf dem iPhone scheiterte an zurückgesetzter Geräteverbindung; der zuvor installierte Stand bleibt bestehen.
+- Umfang, Einschränkungen und Verbesserungsvorschläge: [Prüfbericht](APP_AUDIT_2026-09-10.md). Keine Aussage, dass Käufe, Live-Health/Wetter, Cloud, sämtliche Gerätevarianten oder Rechtstexte vollständig freigegeben sind.
+
 ## Ruhigeres Dashboard und Bearbeitungsmodus · 2026-09-10
 
 - Stift oben aktiviert Bearbeiten, Haken beendet es. Diagonaler, transparenter Eckgriff nur beim Bearbeiten; keine dauerhaft sichtbare Griff-Schaltfläche und kein zusätzlicher Platz darunter. Navigation während des Bearbeitens gesperrt, damit Ziehen keine Detailseite öffnet.

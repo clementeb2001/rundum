@@ -141,6 +141,15 @@ public struct CalendarItem: Identifiable, Codable {
     }
 }
 
+public enum WidgetEventSelection {
+    /// The widget expires titles at their start, so ongoing events must not hide future ones.
+    public static func next(in events: [CalendarItem], after now: Date) -> CalendarItem? {
+        events.filter { $0.start > now && $0.end > $0.start }.min {
+            $0.start == $1.start ? $0.id < $1.id : $0.start < $1.start
+        }
+    }
+}
+
 public struct CalendarTimelinePlacement {
     public let event: CalendarItem
     public let start: Date

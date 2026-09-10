@@ -90,7 +90,7 @@ enum WidgetSnapshot {
         guard let defaults = UserDefaults(suiteName: group) else { return }
         // Only calendar data explicitly opted into the lock-screen/home-screen snapshot.
         let allowed = UserDefaults.standard.bool(forKey: "shareCalendarWithWidget") && cards.contains { $0.id == .calendar }
-        let next = allowed ? events.first : nil
+        let next = allowed ? WidgetEventSelection.next(in: events, after: Date()) : nil
         defaults.set(next?.title ?? copy("Dein Tag, auf einen Blick.", "Ta journée, en un coup d’œil.", "Your day, at a glance."), forKey: "headline")
         defaults.set(next?.start.timeIntervalSince1970, forKey: "eventStart")
         defaults.set(copy("Rundum öffnen", "Ouvrir Rundum", "Open Rundum"), forKey: "subtitle")
