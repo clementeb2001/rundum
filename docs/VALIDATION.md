@@ -1,5 +1,54 @@
 # Prüfprotokoll · 2026-09-08
 
+## Kalenderauswahl in den Karteneinstellungen (Mein / Gemeinsam / Beide) · 2026-09-10
+
+Filter für die angezeigten Kalender – bewusst in den **Karteneinstellungen der Kalenderkarte**, damit die Heute-Seite sauber bleibt. **Nicht build-verifiziert.**
+
+- **Segmentierter Umschalter** in `CardCustomizationView` (nur für die Kalenderkarte, Abschnitt „Angezeigte Kalender"): „Mein", „Gemeinsam", „Beide". Auswahl in `AppState.calendarScope` (`UserDefaults`) persistiert, Standard „Beide". Kein Bedienelement mehr auf dem Dashboard selbst.
+- **Wirkung:** Filtert konsistent alle Kalender-Darstellungen im Dashboard — Fokuskarte, interaktive Kalenderkarte und Wochenstreifen. Lokale iPhone-Termine gelten als „Mein", geteilte Supabase-Termine als „Gemeinsam". `allEvents` sowie die lokalen `calendar.history`-Quellen in `RichMetricCardView` werden je nach Auswahl ein- oder ausgeblendet.
+- **Nicht betroffen:** Widget (weiterhin nur privater nächster Termin, separater Schalter) und die Kalender-Detailseite (Drilldown zeigt weiterhin alles).
+- Zugriffs-ID: `calendar-scope`.
+
+## Fokus-Kalenderkarte im „Als Nächstes"-Stil (Apple-inspiriert) · 2026-09-10
+
+Neugestaltung der Fokus-Kalenderkarte nach Vorbild des nativen iOS-Kalender-Widgets. **Nicht build-verifiziert.**
+
+- **Zweispaltiges Layout (Vollbreite):** Links großer Wochentag (Akzentfarbe) + Tageszahl + heutige Termine; rechts die kommenden Tage mit Kopfzeilen („MORGEN", „SAMSTAG, 12. SEPT.").
+- **Termin-Pillen:** getönter Hintergrund je Kalenderfarbe (`calendarSourceColor`); getaktete Termine mit farbigem Balken + Uhrzeit, ganztägige mit Kalender-Chip. Laufende/über Mitternacht reichende Termine erscheinen am Folgetag mit „Endet HH:mm" (z. B. Nachtschicht), genau wie im Vorbild.
+- **Halbbreite:** kompakte Einspalter-Variante (Wochentag, Zahl, nächster Termin).
+- **Daten:** nutzt die bereits kombinierten Dashboard-Ereignisse (lokale iPhone-Kalender + geteilte Termine); dedupliziert über Tagesgruppen; Kartenhöhe für Vollbild-Fokus auf 156 pt erhöht (wächst mit Inhalt). Accessibility-ID `calendar-focus-summary` bleibt erhalten.
+- **Offen:** Kompilierung; visuelle Prüfung mit echten Terminen/Schichten; Wochentagsfarbe ist die Kartenakzentfarbe (nicht Apples Rot) – auf Wunsch änderbar.
+
+## Import von iPhone-Kalender-Terminen in den geteilten Kalender · 2026-09-10
+
+Neue Import-Funktion im gemeinsamen Kalender. **Nicht build-verifiziert** (kein Xcode in dieser Umgebung).
+
+- **Import-Ansicht (`ImportEventsView`):** In den Kalendereinstellungen unter „Termine importieren" → „Aus iPhone-Kalender importieren". Auswahl eines Quell-iPhone-Kalenders (EventKit), eines Zeitraums (2/4/8 Wochen, 3 Monate) und der einzelnen Termine (alle/keine). Die gewählten Termine werden in den geteilten Supabase-Kalender kopiert.
+- **SuperShift & andere Apps:** Kein direkter App-Zugriff möglich; der Weg führt über den iOS-Kalender. Sobald SuperShift (oder eine andere App) ihre Schichten in den iOS-Kalender synchronisiert, ist dieser Kalender als Quelle wählbar. Hinweistext in der UI erklärt das.
+- **Duplikate:** Vor dem Import werden bestehende geteilte Termine im Zeitraum geladen und Treffer (gleicher Titel + Startminute) übersprungen, damit wiederholtes Importieren nichts doppelt anlegt.
+- **Server/Geräte:** `CloudService.fetchSharedEvents(calendar:in:)` (ohne Seiteneffekt, für Dedup) und `importEvents(_:into:)` (ein Bulk-POST an PostgREST, danach ein Reload). `CalendarService.events(in:from:)` liest Termine eines gewählten Quell-Kalenders. Titel werden getrimmt/auf 300 Zeichen begrenzt, Enddatum bei Bedarf auf Start+1 h korrigiert (DB verlangt ends_at > starts_at).
+- **Offen (in Xcode/gegen Supabase zu prüfen):** Kompilierung, echter Bulk-Insert unter RLS, Ganztags-Termine (werden als getaktete Termine kopiert, da das Schema kein all-day-Feld hat), sehr große Importmengen.
+
+## Gemeinsam-Tab aufgeräumt: Verwaltung in eigener Einstellungsansicht · 2026-09-10
+
+Überarbeitung der „Gemeinsam"-Ansicht für ein ruhigeres, eleganteres Layout. **Nicht build-verifiziert** (kein Xcode in dieser Umgebung).
+
+- **Hauptseite zeigt nur noch das Wesentliche:** Monatsraster, Tagesagenda des gewählten Tages und „Termin hinzufügen". Der große Intro-Header sowie alle Verwaltungssektionen wurden entfernt; der Navigationstitel ist der Kalendername.
+- **Neue `SharedCalendarSettingsView`** (Zahnrad oben rechts) bündelt: aktiven Kalender wählen, Teilen & Mitglieder (Einladung erstellen/teilen, Code), Einladung annehmen, neuen Kalender erstellen sowie Kalender löschen/verlassen.
+- **Klare Leerzustände:** Nicht angemeldet → zentrierte Anmelde-Karte; angemeldet ohne Kalender → zentrierte Karte mit „Kalender erstellen oder beitreten", die direkt die Einstellungsansicht öffnet.
+- Zugriffs-IDs: `family-settings`, `family-start` neu; `family-auth`, `family-add-event`, `family-invite` bleiben.
+
+## Gemeinsam-Tab: geteilter Familienkalender mit Monatsansicht · 2026-09-10
+
+Ausbau der „Gemeinsam"-Ansicht von einer reinen Terminliste zu einer echten Kalenderansicht (TimeTree-/FamilyWall-Stil) auf dem bestehenden Supabase-Backend. **Nicht build-verifiziert** (kein Xcode in dieser Umgebung).
+
+- **Monatsraster + Tagesagenda:** Wiederverwendung von `CalendarMonthGrid`; darunter die Termine des gewählten Tages mit Bearbeiten (Tippen) und Löschen (Wischen), farblich nach „Du" vs. Kalendername unterschieden. „Termin hinzufügen" öffnet den `EventComposer` mit vorbelegtem Tag.
+- **Mehrere Kalender:** Auswahl über einen Picker, wenn man mehr als einen geteilten Kalender hat (eigener + beigetretene).
+- **Teilen per Einladung:** Eigentümer erzeugen einen Einladungscode und teilen ihn als fertige Nachricht per `ShareLink` (Nachrichten/WhatsApp/AirDrop). Beitritt weiterhin per Code. Hinweis in der UI: Alle melden sich mit ihrer **Apple-ID** an; eine direkte Freigabe an eine fremde Apple-ID ist über Apple nicht möglich (gleiches Modell wie TimeTree/FamilyWall).
+- **Server:** Neue `CloudService.loadFamilyEvents(in:)` lädt Termine für den sichtbaren Monat (der bisherige `loadCalendars` bleibt für das 7-Tage-Dashboard). `familyEvents` wird bei Ab-/Anmeldung geleert. `calendarSourceColor` von `private` auf intern gestellt, damit Raster und Agenda dieselben Farben nutzen.
+- **Voraussetzung:** Funktioniert nur mit eingerichtetem Supabase-Projekt und Anmeldung; ohne Konto zeigt der Tab weiterhin den Einrichtungs-/Anmeldezustand.
+- **Offen (in Xcode zu prüfen):** Kompilierung, Live-Verhalten gegen ein echtes Supabase-Projekt, Mehrmonats-Navigation, Berechtigungen (Mitglied vs. Eigentümer), sowie ob die wiederverwendete `calendar-month-grid`-Accessibility-ID die Dashboard-UI-Tests stört (Family-Tab ist dort nicht ausgewählt).
+
 ## Design-Feinschliff, Animationen und Erscheinungsbild-Auswahl · 2026-09-10
 
 Umsetzung der in der interaktiven Vorschau gezeigten Effekte im SwiftUI-Code sowie einer neuen Design-Einstellung. **Nicht build-verifiziert:** kein Xcode/Swift-Toolchain in dieser Linux-Umgebung; Kompilierung, Tests und visuelle Prüfung müssen in Xcode erfolgen.

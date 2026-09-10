@@ -132,14 +132,14 @@ final class CardFlowTests: XCTestCase {
         XCTAssertTrue(restored.isSelected)
         screenshot("card-personalization-restored")
     }
-    func testCornerDragResizesAndPersists() {
+    func testEditMenuResizesAndPersists() {
         let handle = app.descendants(matching: .any)["resize-card-steps"].firstMatch
         XCTAssertFalse(handle.exists)
         app.buttons["dashboard-edit"].tap()
         for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
         XCTAssertTrue(handle.waitForExistence(timeout: 5))
-        let start = handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-        start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: -90, dy: 0)))
+        handle.tap()
+        XCTAssertTrue(app.buttons["Klein"].waitForExistence(timeout: 5)); app.buttons["Klein"].tap()
         app.terminate(); app.launch()
         let card = app.buttons["dashboard-card-steps"]
         XCTAssertTrue(card.waitForExistence(timeout: 5))
@@ -148,8 +148,8 @@ final class CardFlowTests: XCTestCase {
         screenshot("corner-resize-half")
         app.buttons["dashboard-edit"].tap()
         for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
-        let half = handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-        half.press(forDuration: 0.05, thenDragTo: half.withOffset(CGVector(dx: 90, dy: 0)))
+        handle.tap()
+        XCTAssertTrue(app.buttons["Breit"].waitForExistence(timeout: 5)); app.buttons["Breit"].tap()
         app.terminate(); app.launch()
         XCTAssertGreaterThan(card.frame.width, app.frame.width * 0.7)
         app.buttons["dashboard-edit"].tap()

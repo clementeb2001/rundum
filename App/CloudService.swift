@@ -67,6 +67,7 @@ enum CloudConfigurationStore {
     @Published private(set) var session: CloudSession?
     @Published var calendars: [SharedCalendar] = []
     @Published var events: [SharedEvent] = []
+    @Published var familyEvents: [SharedEvent] = []
     @Published var busy = false
     @Published var error: String?
     private var refreshTask: Task<CloudSession, Error>?
@@ -109,11 +110,11 @@ enum CloudConfigurationStore {
     }
     func signOut() async {
         _ = try? await request("/auth/v1/logout", method: "POST")
-        try? SessionKeychain.save(nil); session = nil; calendars = []; events = []
+        try? SessionKeychain.save(nil); session = nil; calendars = []; events = []; familyEvents = []
     }
     func deleteAccount() async throws {
         _ = try await request("/rest/v1/rpc/delete_own_account", method: "POST", body: Data("{}".utf8))
-        try SessionKeychain.save(nil); session = nil; calendars = []; events = []
+        try SessionKeychain.save(nil); session = nil; calendars = []; events = []; familyEvents = []
     }
     private func token() async throws -> String {
         guard let session else { throw CloudFailure.message("Please sign in") }
@@ -162,6 +163,15 @@ enum CloudConfigurationStore {
         calendars = loadedCalendars
         events = try Self.decoder.decode([SharedEvent].self, from: eventsData)
     }
+    /// Loads shared events for an arbitrary range (used by the Together calendar view, which browses whole months).
+    func loadFamilyEvents(in range: DateInterval) async throws {
+        let user = session?.user.id
+        let start = ISO8601DateFormatter().string(from: range.start)
+        let end = ISO8601DateFormatter().string(from: range.end)
+        let data = try await request("/rest/v1/shared_events?select=*&ends_at=gte.\(start)&starts_at=lt.\(end)&order=starts_at")
+        guard user == session?.user.id else { return }
+        familyEvents = try Self.decoder.decode([SharedEvent].self, from: data)
+    }
     func createCalendar(name: String) async throws {
         _ = try await request("/rest/v1/rpc/create_shared_calendar", method: "POST", body: JSONSerialization.data(withJSONObject: ["calendar_name": name]))
         try await loadCalendars()
@@ -177,6 +187,20 @@ enum CloudConfigurationStore {
     func addEvent(calendar: UUID, title: String, start: Date, end: Date) async throws {
         guard let user = session?.user.id else { return }
         _ = try await request("/rest/v1/shared_events", method: "POST", body: Self.encoder.encode(SharedEvent(id: UUID(), calendar_id: calendar, title: title, starts_at: start, ends_at: end, created_by: user)))
+        try await loadCalendars()
+    }
+    /// Existing shared events in a range, without touching published state (used for import de-duplication).
+    func fetchSharedEvents(calendar: UUID, in range: DateInterval) async throws -> [SharedEvent] {
+        let start = ISO8601DateFormatter().string(from: range.start)
+        let end = ISO8601DateFormatter().string(from: range.end)
+        let data = try await request("/rest/v1/shared_events?select=*&calendar_id=eq.\(calendar.uuidString)&ends_at=gte.\(start)&starts_at=lt.\(end)&order=starts_at")
+        return try Self.decoder.decode([SharedEvent].self, from: data)
+    }
+    /// Bulk-copies events (e.g. from an iPhone calendar) into a shared calendar in one request.
+    func importEvents(_ items: [(title: String, start: Date, end: Date)], into calendar: UUID) async throws {
+        guard let user = session?.user.id, !items.isEmpty else { return }
+        let payload = items.map { SharedEvent(id: UUID(), calendar_id: calendar, title: $0.title, starts_at: $0.start, ends_at: $0.end, created_by: user) }
+        _ = try await request("/rest/v1/shared_events", method: "POST", body: Self.encoder.encode(payload))
         try await loadCalendars()
     }
     func deleteEvent(_ event: SharedEvent) async throws {

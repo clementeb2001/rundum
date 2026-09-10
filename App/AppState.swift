@@ -32,12 +32,16 @@ import WidgetKit
     func restore() async { do { try await AppStore.sync(); await refresh() } catch { self.error = error.localizedDescription } }
 }
 
+/// Which calendars the Today view shows: personal (iPhone), the shared calendar, or both.
+enum CalendarScope: String, CaseIterable, Identifiable { case mine, shared, both; var id: String { rawValue } }
+
 @MainActor final class AppState: ObservableObject {
     @Published var configuration: DashboardConfiguration
     @Published var syncError: String?
     @Published var syncing = false
     @Published var language: Language { didSet { UserDefaults.standard.set(language.rawValue, forKey: "language") } }
     @Published var appearance: AppAppearance { didSet { UserDefaults.standard.set(appearance.rawValue, forKey: "appearance") } }
+    @Published var calendarScope: CalendarScope { didSet { UserDefaults.standard.set(calendarScope.rawValue, forKey: "calendarScope") } }
     @Published var onboarded: Bool { didSet { UserDefaults.standard.set(onboarded, forKey: "onboarded") } }
     private var storageKey = "dashboard.guest"
     private var syncTask: Task<Void, Never>?
@@ -45,6 +49,7 @@ import WidgetKit
     init() {
         language = Language(rawValue: UserDefaults.standard.string(forKey: "language") ?? "") ?? .initial
         appearance = AppAppearance(rawValue: UserDefaults.standard.string(forKey: "appearance") ?? "") ?? .system
+        calendarScope = CalendarScope(rawValue: UserDefaults.standard.string(forKey: "calendarScope") ?? "") ?? .both
         onboarded = UserDefaults.standard.bool(forKey: "onboarded")
         configuration = Self.read("dashboard.guest") ?? .init()
     }
