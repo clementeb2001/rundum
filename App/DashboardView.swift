@@ -102,12 +102,23 @@ struct DashboardView: View {
                             }
                             .layoutValue(key: HalfCardLayoutKey.self, value: card.width == .half)
                             .cardScrollTransition().scaleEffect(dragging == card.id ? 1.035 : 1)
-                            .rotationEffect(.degrees(editing && !reduceMotion ? (card.id.rawValue.count.isMultiple(of: 2) ? 0.35 : -0.35) : 0))
-                            .animation(editing && !reduceMotion ? .easeInOut(duration: 0.16).repeatForever(autoreverses: true) : .rundumSnappy, value: editing)
+                            .animation(reduceMotion ? nil : .rundumSnappy, value: dragging)
                             .zIndex(dragging == card.id ? 2 : 0)
                             .zoomSource(card.id, cardZoom)
-                            .contextMenu { Button { styling = card } label: { Label(state.copy("Karte gestalten", "Personnaliser la carte", "Customize card"), systemImage: "paintpalette") } }
-                            .onLongPressGesture(minimumDuration: 0.45) { if !editing { withAnimation(.rundumSnappy) { editing = true } } }
+                            .contextMenu {
+                                Button { withAnimation(.rundumSnappy) { editing = true } } label: {
+                                    Label(state.copy("Dashboard bearbeiten", "Modifier le tableau de bord", "Edit dashboard"), systemImage: "square.grid.2x2")
+                                }
+                                Button { resize(card, to: card.width == .half ? .full : .half) } label: {
+                                    Label(card.width == .half ? state.copy("Breit anzeigen", "Afficher en grand", "Show wide") : state.copy("Klein anzeigen", "Afficher en petit", "Show small"), systemImage: card.width == .half ? "rectangle" : "square")
+                                }
+                                Button { styling = card } label: {
+                                    Label(state.copy("Karte gestalten", "Personnaliser la carte", "Customize card"), systemImage: "paintpalette")
+                                }
+                                Button(role: .destructive) { remove(card) } label: {
+                                    Label(state.copy("Karte entfernen", "Supprimer la carte", "Remove card"), systemImage: "trash")
+                                }
+                            }
                             .onDrop(of: [UTType.text], delegate: DashboardCardDropDelegate(target: card.id, dragging: $dragging, cards: $state.configuration.cards) { state.changed(cloud: cloud) })
                     } }
                     Button { library = true } label: { Label(state.copy("Dein Dashboard gestalten", "Personnaliser ton tableau de bord", "Make this dashboard yours"), systemImage: "plus.circle").frame(maxWidth: .infinity).padding(18) }.background(Palette.teal.opacity(0.06), in: RoundedRectangle(cornerRadius: 20))

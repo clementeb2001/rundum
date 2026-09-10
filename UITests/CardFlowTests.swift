@@ -164,6 +164,14 @@ final class CardFlowTests: XCTestCase {
         XCTAssertTrue(surface.isHittable)
         XCTAssertTrue(app.descendants(matching: .any)["resize-card-steps"].firstMatch.isHittable)
     }
+    func testLongPressOpensCardEditingMenu() {
+        let card = app.buttons["dashboard-card-steps"]
+        for _ in 0..<5 where !card.isHittable { app.swipeUp() }
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        card.press(forDuration: 0.8)
+        XCTAssertTrue(app.buttons["Dashboard bearbeiten"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Karte gestalten"].exists)
+    }
     func testCalendarFocusDiffersFromOverview() {
         func template(_ name: String) {
             app.buttons["dashboard-customize"].tap()
