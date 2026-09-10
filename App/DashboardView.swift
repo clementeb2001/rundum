@@ -41,11 +41,6 @@ struct DashboardView: View {
                         Text(state.copy("Hallo, neuer Tag.", "Bonjour, nouvelle journée.", "Hello, new day.")).font(.system(.largeTitle, design: .rounded, weight: .bold))
                         Text(state.copy("Alles Wichtige. An deinem Platz.", "L’essentiel. Au même endroit.", "Everything that matters. In your space.")).foregroundStyle(.secondary)
                     }
-                    if cloud.session != nil && state.configuration.visibleCards(isPro: purchases.isPro).contains(where: { $0.id == .calendar }) {
-                        Picker(state.copy("Kalenderauswahl", "Choix du calendrier", "Calendar selection"), selection: $state.calendarScope) {
-                            ForEach(CalendarScope.allCases) { scope in Text(state.copy.title(scope)).tag(scope) }
-                        }.pickerStyle(.segmented).accessibilityIdentifier("calendar-scope")
-                    }
                     if let error = state.syncError { Notice(text: state.copy("Offline gespeichert. Synchronisierung ausstehend: ", "Enregistré localement. Synchronisation en attente : ", "Saved locally. Sync pending: ") + error) }
                     if state.configuration.cards.isEmpty {
                         VStack(spacing: 14) { Image(systemName: "square.grid.2x2").font(.largeTitle); Text(state.copy("Hier beginnt dein Überblick.", "Ton aperçu commence ici.", "Your overview starts here.")); Button(state.copy("Karten auswählen", "Choisir les cartes", "Choose cards")) { library = true } }.frame(maxWidth: .infinity).padding(32).background(.background, in: RoundedRectangle(cornerRadius: 24))

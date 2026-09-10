@@ -364,6 +364,14 @@ struct CardCustomizationView: View {
                     Picker(state.copy("Ansicht", "Vue", "View"), selection: binding(\.presentation)) { ForEach(kind.presentations, id: \.self) { Text(state.copy.title($0)).tag($0) } }.accessibilityIdentifier("card-presentation")
                     Picker(state.copy("Hintergrund", "Fond", "Background"), selection: binding(\.surface)) { ForEach(CardSurface.allCases, id: \.self) { Text(state.copy.title($0)).tag($0) } }.pickerStyle(.segmented)
                 }
+                if kind == .calendar {
+                    Section(state.copy("Angezeigte Kalender", "Calendriers affichés", "Shown calendars")) {
+                        Picker(state.copy("Kalender", "Calendrier", "Calendar"), selection: $state.calendarScope) {
+                            ForEach(CalendarScope.allCases) { scope in Text(state.copy.title(scope)).tag(scope) }
+                        }.pickerStyle(.segmented).accessibilityIdentifier("calendar-scope")
+                        Text(state.copy("Wähle, ob dein privater iPhone-Kalender, der gemeinsame Kalender oder beide auf der Heute-Seite erscheinen.", "Choisis si ton calendrier iPhone privé, le calendrier partagé ou les deux apparaissent sur la page Aujourd’hui.", "Choose whether your private iPhone calendar, the shared calendar, or both appear on the Today page.")).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
                 Section(state.copy("Farbe", "Couleur", "Color")) {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 75))], spacing: 14) {
                         ForEach(CardTint.allCases, id: \.self) { tint in

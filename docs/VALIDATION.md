@@ -1,10 +1,10 @@
 # Prüfprotokoll · 2026-09-08
 
-## Kalenderauswahl in der Heute-Ansicht (Mein / Gemeinsam / Beide) · 2026-09-10
+## Kalenderauswahl in den Karteneinstellungen (Mein / Gemeinsam / Beide) · 2026-09-10
 
-Neuer Umschalter im Dashboard, um die angezeigten Kalender zu filtern. **Nicht build-verifiziert.**
+Filter für die angezeigten Kalender – bewusst in den **Karteneinstellungen der Kalenderkarte**, damit die Heute-Seite sauber bleibt. **Nicht build-verifiziert.**
 
-- **Segmentierter Umschalter** unter der Begrüßung: „Mein", „Gemeinsam", „Beide". Erscheint nur, wenn man angemeldet ist (geteilter Kalender verfügbar) und eine Kalenderkarte sichtbar ist. Auswahl in `AppState.calendarScope` (`UserDefaults`) persistiert, Standard „Beide".
+- **Segmentierter Umschalter** in `CardCustomizationView` (nur für die Kalenderkarte, Abschnitt „Angezeigte Kalender"): „Mein", „Gemeinsam", „Beide". Auswahl in `AppState.calendarScope` (`UserDefaults`) persistiert, Standard „Beide". Kein Bedienelement mehr auf dem Dashboard selbst.
 - **Wirkung:** Filtert konsistent alle Kalender-Darstellungen im Dashboard — Fokuskarte, interaktive Kalenderkarte und Wochenstreifen. Lokale iPhone-Termine gelten als „Mein", geteilte Supabase-Termine als „Gemeinsam". `allEvents` sowie die lokalen `calendar.history`-Quellen in `RichMetricCardView` werden je nach Auswahl ein- oder ausgeblendet.
 - **Nicht betroffen:** Widget (weiterhin nur privater nächster Termin, separater Schalter) und die Kalender-Detailseite (Drilldown zeigt weiterhin alles).
 - Zugriffs-ID: `calendar-scope`.
