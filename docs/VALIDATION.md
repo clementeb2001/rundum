@@ -1,5 +1,15 @@
 # Prüfprotokoll · 2026-09-08
 
+## Fokus-Kalenderkarte im „Als Nächstes"-Stil (Apple-inspiriert) · 2026-09-10
+
+Neugestaltung der Fokus-Kalenderkarte nach Vorbild des nativen iOS-Kalender-Widgets. **Nicht build-verifiziert.**
+
+- **Zweispaltiges Layout (Vollbreite):** Links großer Wochentag (Akzentfarbe) + Tageszahl + heutige Termine; rechts die kommenden Tage mit Kopfzeilen („MORGEN", „SAMSTAG, 12. SEPT.").
+- **Termin-Pillen:** getönter Hintergrund je Kalenderfarbe (`calendarSourceColor`); getaktete Termine mit farbigem Balken + Uhrzeit, ganztägige mit Kalender-Chip. Laufende/über Mitternacht reichende Termine erscheinen am Folgetag mit „Endet HH:mm" (z. B. Nachtschicht), genau wie im Vorbild.
+- **Halbbreite:** kompakte Einspalter-Variante (Wochentag, Zahl, nächster Termin).
+- **Daten:** nutzt die bereits kombinierten Dashboard-Ereignisse (lokale iPhone-Kalender + geteilte Termine); dedupliziert über Tagesgruppen; Kartenhöhe für Vollbild-Fokus auf 156 pt erhöht (wächst mit Inhalt). Accessibility-ID `calendar-focus-summary` bleibt erhalten.
+- **Offen:** Kompilierung; visuelle Prüfung mit echten Terminen/Schichten; Wochentagsfarbe ist die Kartenakzentfarbe (nicht Apples Rot) – auf Wunsch änderbar.
+
 ## Import von iPhone-Kalender-Terminen in den geteilten Kalender · 2026-09-10
 
 Neue Import-Funktion im gemeinsamen Kalender. **Nicht build-verifiziert** (kein Xcode in dieser Umgebung).

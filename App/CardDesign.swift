@@ -440,21 +440,7 @@ struct CompactDashboardCard: View {
                     Text(weather.loading ? state.copy("Wetter wird geladen …", "Chargement de la météo…", "Loading weather…") : weather.failed ? state.copy("Keine Verbindung · später erneut versuchen", "Pas de connexion · réessaie plus tard", "No connection · try again later") : state.copy("Noch keine Wetterdaten", "Pas encore de données météo", "No weather data yet")).font(.caption).foregroundStyle(.secondary).lineLimit(3)
                 }
             } else if card.id == .calendar {
-                let layout = card.width == .full ? AnyLayout(HStackLayout(alignment: .top, spacing: 24)) : AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
-                layout {
-                VStack(alignment: .leading, spacing: 4) {
-                Text(Date(), format: .dateTime.day()).font(.system(size: 42, weight: .bold, design: .rounded)).foregroundStyle(card.accent)
-                Text(Date(), format: .dateTime.weekday(.wide)).font(.caption)
-                }
-                VStack(alignment: .leading, spacing: 8) {
-                let range = HistoryPeriod.day.interval(containing: Date())
-                let local = calendar.history(in: range)
-                if let event = (local + events).filter({ $0.end > Date() && $0.start < range.end }).sorted(by: { $0.start < $1.start }).first {
-                    Text(event.title).font(.caption.bold()).lineLimit(2)
-                    if !event.allDay { Text(event.start, format: .dateTime.hour().minute()).font(.caption2).foregroundStyle(.secondary) }
-                } else { Text(calendar.hasAccess ? state.copy("Keine weiteren Termine", "Aucun autre événement", "No more events") : state.copy("Kalender verbinden", "Connecter le calendrier", "Connect calendar")).font(.caption).foregroundStyle(.secondary) }
-                }.frame(maxWidth: .infinity, alignment: .leading)
-                }.accessibilityIdentifier("calendar-focus-summary")
+                calendarFocus
             } else if !health.requested {
                 Image(systemName: "heart.text.square").font(.title2).foregroundStyle(card.accent)
                 Text(state.copy("Health verbinden", "Connecter Santé", "Connect Health")).font(.caption.bold())
@@ -485,8 +471,81 @@ struct CompactDashboardCard: View {
             .contentShape(RoundedRectangle(cornerRadius: 24))
             .task(id: weather.place.id) { if card.id == .weather { await weather.refresh() } }
     }
+    /// Apple "Up Next" inspired focus: big date + today's events on the left, upcoming days as tinted pills on the right.
+    @ViewBuilder private var calendarFocus: some View {
+        let now = Date(), cal = Calendar.current, today = cal.startOfDay(for: now)
+        let windowEnd = cal.date(byAdding: .day, value: 8, to: today) ?? today
+        let all = events.filter { $0.end > now && $0.start < windowEnd }.sorted { $0.start < $1.start }
+        let groups = dayGroups(all, from: today, calendar: cal)
+        let todayItems = groups.first { cal.isDate($0.date, inSameDayAs: today) }?.items ?? []
+        let upcoming = groups.filter { !cal.isDate($0.date, inSameDayAs: today) }
+        if card.width == .full {
+            HStack(alignment: .top, spacing: 16) {
+                VStack(alignment: .leading, spacing: 7) {
+                    Text(now, format: .dateTime.weekday(.wide)).textCase(.uppercase).font(.caption.weight(.bold)).foregroundStyle(card.accent).lineLimit(1).minimumScaleFactor(0.6)
+                    Text(now, format: .dateTime.day()).font(.system(size: 44, weight: .bold, design: .rounded)).foregroundStyle(.primary)
+                    if todayItems.isEmpty { Text(state.copy("Frei", "Libre", "Free")).font(.caption).foregroundStyle(.secondary) }
+                    else { ForEach(todayItems.prefix(2)) { item in eventPill(item, on: today) } }
+                }.frame(width: 104, alignment: .leading)
+                VStack(alignment: .leading, spacing: 7) {
+                    if upcoming.isEmpty {
+                        Text(calendar.hasAccess || !events.isEmpty ? state.copy("Keine weiteren Termine", "Aucun autre événement", "No more events") : state.copy("Kalender verbinden", "Connecter le calendrier", "Connect calendar")).font(.caption).foregroundStyle(.secondary)
+                    } else {
+                        ForEach(upcoming.prefix(2), id: \.date) { group in
+                            Text(dayHeader(group.date, cal)).font(.caption.weight(.bold)).foregroundStyle(.secondary).lineLimit(1)
+                            ForEach(group.items.prefix(2)) { item in eventPill(item, on: group.date) }
+                        }
+                    }
+                }.frame(maxWidth: .infinity, alignment: .leading)
+            }.accessibilityIdentifier("calendar-focus-summary")
+        } else {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(now, format: .dateTime.weekday(.wide)).textCase(.uppercase).font(.caption2.weight(.bold)).foregroundStyle(card.accent).lineLimit(1)
+                Text(now, format: .dateTime.day()).font(.system(size: 36, weight: .bold, design: .rounded))
+                if let item = (todayItems + upcoming.flatMap(\.items)).first { eventPill(item, on: cal.startOfDay(for: item.start)) }
+                else { Text(calendar.hasAccess ? state.copy("Keine Termine", "Aucun événement", "No events") : state.copy("Kalender verbinden", "Connecter le calendrier", "Connect calendar")).font(.caption).foregroundStyle(.secondary) }
+            }.frame(maxWidth: .infinity, alignment: .leading).accessibilityIdentifier("calendar-focus-summary")
+        }
+    }
+    private func dayGroups(_ items: [CalendarItem], from today: Date, calendar cal: Calendar) -> [(date: Date, items: [CalendarItem])] {
+        let now = Date()
+        var result: [(date: Date, items: [CalendarItem])] = []
+        for offset in 0..<8 {
+            guard let dayStart = cal.date(byAdding: .day, value: offset, to: today), let dayEnd = cal.date(byAdding: .day, value: 1, to: dayStart) else { continue }
+            let dayItems = items.filter { $0.start < dayEnd && $0.end > dayStart && $0.end > now }
+            if !dayItems.isEmpty { result.append((date: dayStart, items: dayItems)) }
+            if result.count >= 4 { break }
+        }
+        return result
+    }
+    private func dayHeader(_ date: Date, _ cal: Calendar) -> String {
+        if cal.isDateInTomorrow(date) { return state.copy("Morgen", "Demain", "Tomorrow").uppercased() }
+        return date.formatted(.dateTime.weekday(.wide).day().month(.abbreviated)).uppercased()
+    }
+    @ViewBuilder private func eventPill(_ item: CalendarItem, on day: Date) -> some View {
+        let color = calendarSourceColor(item.source)
+        let startsOnDay = Calendar.current.isDate(item.start, inSameDayAs: day)
+        let title = item.title.isEmpty ? state.copy("Termin", "Événement", "Event") : item.title
+        HStack(spacing: 8) {
+            if item.allDay {
+                Image(systemName: "calendar").font(.caption2.weight(.bold)).foregroundStyle(.white).frame(width: 22, height: 22).background(color, in: Circle())
+                Text(title).font(.subheadline.weight(.semibold)).lineLimit(1)
+            } else {
+                RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 3, height: 28)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(.subheadline.weight(.semibold)).lineLimit(1)
+                    Text(startsOnDay ? item.start.formatted(date: .omitted, time: .shortened) : state.copy("Endet ", "Fin ", "Ends ") + item.end.formatted(date: .omitted, time: .shortened)).font(.caption).foregroundStyle(color)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 9).padding(.vertical, 7)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
+        .accessibilityElement(children: .combine)
+    }
     private var compactMinimumHeight: CGFloat {
-        if card.id == .calendar && card.width == .full { return 120 }
+        if card.id == .calendar && card.width == .full { return 156 }
         if card.width == .half {
             if card.id == .weather && weather.weather == nil { return 165 }
             if card.id == .calendar && !calendar.hasAccess { return 165 }
