@@ -74,6 +74,42 @@ final class CardFlowTests: XCTestCase {
         XCTAssertTrue(restored.isSelected)
         screenshot("card-personalization-restored")
     }
+    func testCornerDragResizesAndPersists() {
+        let handle = app.descendants(matching: .any)["resize-card-steps"].firstMatch
+        for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
+        XCTAssertTrue(handle.waitForExistence(timeout: 5))
+        let start = handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        start.press(forDuration: 0.05, thenDragTo: start.withOffset(CGVector(dx: -90, dy: 0)))
+        app.terminate(); app.launch()
+        let card = app.buttons["dashboard-card-steps"]
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        XCTAssertLessThan(card.frame.width, app.frame.width * 0.6)
+        screenshot("corner-resize-half")
+        for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
+        let half = handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        half.press(forDuration: 0.05, thenDragTo: half.withOffset(CGVector(dx: 90, dy: 0)))
+        app.terminate(); app.launch()
+        XCTAssertGreaterThan(card.frame.width, app.frame.width * 0.7)
+    }
+    func testCalendarFocusDiffersFromOverview() {
+        func template(_ name: String) {
+            app.buttons["dashboard-customize"].tap()
+            app.buttons["customize-card-calendar"].tap()
+            let button = app.buttons[name]
+            for _ in 0..<5 where !button.isHittable { app.swipeUp() }
+            XCTAssertTrue(button.waitForExistence(timeout: 5)); button.tap()
+            app.terminate(); app.launch()
+        }
+        template("Fokus")
+        let summary = app.descendants(matching: .any)["calendar-focus-summary"].firstMatch
+        for _ in 0..<5 where !summary.isHittable { app.swipeUp() }
+        XCTAssertTrue(summary.exists)
+        XCTAssertFalse(app.buttons["calendar-day-0"].exists)
+        screenshot("calendar-wide-focus")
+        app.terminate(); app.launch()
+        template("Überblick")
+        XCTAssertTrue(app.buttons["calendar-day-0"].waitForExistence(timeout: 5))
+    }
     func testWidgetWidthsPlaceTwoCardsSideBySide() {
         func width(_ kind: String, _ value: String) {
             app.buttons["dashboard-customize"].tap()

@@ -12,12 +12,11 @@ struct WeatherCredits: View {
     @Environment(\.colorScheme) private var scheme
     var body: some View {
         if let attribution = model.attribution {
-            let layout = compact ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4)) : AnyLayout(HStackLayout())
-            layout {
+            Link(destination: attribution.legalPageURL) {
                 AsyncImage(url: scheme == .dark ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL) { image in image.resizable().scaledToFit() } placeholder: { Text(attribution.serviceName).font(.caption) }.frame(width: 96, height: 22).accessibilityLabel(attribution.serviceName)
-                if !compact { Spacer() }
-                Link(state.copy("Datenquellen", "Sources", "Data sources"), destination: attribution.legalPageURL).font(.caption)
             }
+            .frame(minHeight: 44)
+            .accessibilityLabel(attribution.serviceName + " · " + state.copy("Datenquellen", "Sources", "Data sources"))
         }
     }
 }

@@ -312,7 +312,7 @@ struct CardCustomizationView: View {
             Form {
                 Section(state.copy("Live-Vorschau", "Aperçu en direct", "Live preview")) {
                     VStack(spacing: 10) {
-                        if card.width == .half { CompactDashboardCard(card: previewCard, events: calendar.events) }
+                        if card.width == .half || (kind == .calendar && card.presentation == .value) { CompactDashboardCard(card: previewCard, events: calendar.events) }
                         else { CardRegistry.render(card: previewCard, events: calendar.events) }
                         if kind == .weather { WeatherCredits(compact: card.width == .half).padding(.horizontal, 12) }
                     }.frame(maxWidth: card.width == .half ? 180 : .infinity).listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
@@ -321,7 +321,7 @@ struct CardCustomizationView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             widgetTemplate("Kompakt", "Compact", "Compact", icon: "square.grid.2x2", width: .half, style: kind.defaultPresentation)
-                            widgetTemplate("Fokus", "Focus", "Focus", icon: "number.square", width: .full, style: kind == .calendar ? .agenda : .value)
+                            widgetTemplate("Fokus", "Focus", "Focus", icon: "number.square", width: .full, style: .value)
                             widgetTemplate("Überblick", "Aperçu", "Overview", icon: kind == .calendar ? "calendar" : "chart.xyaxis.line", width: .full, style: kind == .calendar ? .agenda : kind == .sleep ? .ring : .line)
                         }.padding(.vertical, 4)
                     }
@@ -412,14 +412,21 @@ struct CompactDashboardCard: View {
                     if let updated = weather.updated { Text(updated, format: .dateTime.hour().minute()).font(.caption2).foregroundStyle(.secondary) }
                 } else { Image(systemName: "cloud.sun").font(.largeTitle).foregroundStyle(card.accent); Text(weather.loading ? state.copy("Lädt …", "Chargement…", "Loading…") : state.copy("Nicht verfügbar", "Indisponible", "Unavailable")).font(.caption) }
             } else if card.id == .calendar {
+                let layout = card.width == .full ? AnyLayout(HStackLayout(alignment: .top, spacing: 24)) : AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+                layout {
+                VStack(alignment: .leading, spacing: 4) {
                 Text(Date(), format: .dateTime.day()).font(.system(size: 42, weight: .bold, design: .rounded)).foregroundStyle(card.accent)
                 Text(Date(), format: .dateTime.weekday(.wide)).font(.caption)
+                }
+                VStack(alignment: .leading, spacing: 8) {
                 let range = HistoryPeriod.day.interval(containing: Date())
                 let local = calendar.history(in: range)
                 if let event = (local + events).filter({ $0.end > Date() && $0.start < range.end }).sorted(by: { $0.start < $1.start }).first {
                     Text(event.title).font(.caption.bold()).lineLimit(2)
                     if !event.allDay { Text(event.start, format: .dateTime.hour().minute()).font(.caption2).foregroundStyle(.secondary) }
                 } else { Text(calendar.hasAccess ? state.copy("Keine weiteren Termine", "Aucun autre événement", "No more events") : state.copy("Kalender verbinden", "Connecter le calendrier", "Connect calendar")).font(.caption).foregroundStyle(.secondary) }
+                }.frame(maxWidth: .infinity, alignment: .leading)
+                }.accessibilityIdentifier("calendar-focus-summary")
             } else if !health.requested {
                 Image(systemName: card.id.symbol).font(.largeTitle).foregroundStyle(card.accent)
                 Text(state.copy("Health verbinden", "Connecter Santé", "Connect Health")).font(.caption)
@@ -436,7 +443,7 @@ struct CompactDashboardCard: View {
                 if card.id == .sleep { Text(state.copy("Schlafziel", "Objectif de sommeil", "Sleep goal")).font(.caption2).foregroundStyle(.secondary) }
             }
             Spacer(minLength: 0)
-        }.frame(maxWidth: .infinity, minHeight: card.size == .small ? 180 : card.size == .large ? 270 : 230, alignment: .topLeading)
+        }.frame(maxWidth: .infinity, minHeight: card.id == .calendar && card.width == .full ? 120 : card.size == .small ? 180 : card.size == .large ? 270 : 230, alignment: .topLeading)
             .padding(14).background {
                 ZStack {
                     Color(uiColor: .secondarySystemGroupedBackground)

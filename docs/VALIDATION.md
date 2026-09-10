@@ -1,5 +1,13 @@
 # Prüfprotokoll · 2026-09-08
 
+## Ziehgriff, Kalender-Fokus und Wetterhinweis · 2026-09-10
+
+- Eigener 44-Punkt-Ziehbereich unten rechts: nach links auf halbe, nach rechts auf volle Breite; Speicherung beim Loslassen, VoiceOver-Verstellaktion und bisherige Breitenwahl bleiben verfügbar. Keine freie Pixelgrößen- oder Höhenänderung per Geste.
+- Kalender-Fokus ist eine breite kompakte Zusammenfassung mit Datum und nächstem heutigen Termin; Überblick bleibt Tagesauswahl mit Zeitachse. Fokus wird gespeichert und in der Live-Vorschau gleich dargestellt.
+- Apple-Wetterlogo bleibt sichtbar und öffnet selbst den vorgeschriebenen Quellenlink; zusätzliche sichtbare Beschriftung entfällt. Grundlage: https://developer.apple.com/weatherkit/ (Apple Weather and third-party attribution).
+- 15 Core-Tests erfolgreich. Zwei neue UI-Tests erfolgreich: Ziehen in beide Richtungen mit Neustart sowie Fokus/Überblick-Unterscheidung. Screenshots geprüft; keine echten Kalender-/Gesundheitsdaten im Simulator. Vollständige VoiceOver- und Wetter-Liveprüfung nicht Teil dieses Durchlaufs.
+- Signierter Gerätebuild erfolgreich und auf dem verbundenen persönlichen iPhone installiert und geöffnet.
+
 ## Widgetartige Karten und halbe Breite · 2026-09-10
 
 - Kartenbreite unabhängig von Höhe/Pro-Größe einstellbar: Ganz oder Halb. Bestehende und unbekannte Breitenwerte laden als Ganz; die Breite bleibt auch kostenlos erhalten. Benachbarte halbe Karten teilen eine Zeile, ohne die Reihenfolge zu ändern; eine einzelne halbe Karte bleibt halb breit. Bei Accessibility-Schriftgrößen wird einspaltig dargestellt.

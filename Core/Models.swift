@@ -24,7 +24,7 @@ public enum CardPresentation: String, Codable, CaseIterable { case value, bars, 
 public extension CardKind {
     var presentations: [CardPresentation] {
         switch self {
-        case .calendar: return [.agenda]
+        case .calendar: return [.agenda, .value]
         case .sleep: return [.ring, .value]
         case .weather: return [.value, .line, .bars]
         case .heart: return [.line, .bars, .value]

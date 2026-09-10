@@ -33,7 +33,7 @@ struct DashboardView: View {
                     }
                     DashboardWidgetLayout(singleColumn: typeSize.isAccessibilitySize) { ForEach(state.configuration.visibleCards(isPro: purchases.isPro)) { card in
                         VStack(spacing: 10) {
-                            if card.width == .half && !typeSize.isAccessibilitySize {
+                            if (card.width == .half && !typeSize.isAccessibilitySize) || (card.id == .calendar && card.presentation == .value) {
                                 NavigationLink {
                                     if card.id == .weather { WeatherDetailView() } else { CardDetailView(kind: card.id) }
                                 } label: { CompactDashboardCard(card: card, events: allEvents) }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-" + card.id.rawValue)
@@ -51,6 +51,14 @@ struct DashboardView: View {
                             }
                             if card.id == .weather { WeatherCredits(compact: card.width == .half).padding(.horizontal, card.width == .half ? 0 : 12) }
                         }
+                            .padding(.bottom, 24)
+                            .overlay(alignment: .bottomTrailing) {
+                                CardResizeHandle(card: card) { width in
+                                    guard let index = state.configuration.cards.firstIndex(where: { $0.id == card.id }) else { return }
+                                    withAnimation(.easeInOut(duration: 0.2)) { state.configuration.cards[index].width = width }
+                                    state.changed(cloud: cloud)
+                                }
+                            }
                             .layoutValue(key: HalfCardLayoutKey.self, value: card.width == .half)
                             .contextMenu { Button { styling = card } label: { Label(state.copy("Karte gestalten", "Personnaliser la carte", "Customize card"), systemImage: "paintpalette") } }
                             .onDrag { dragging = card.id; return NSItemProvider(object: card.id.rawValue as NSString) }
@@ -78,6 +86,35 @@ struct DashboardView: View {
 }
 
 struct HalfCardLayoutKey: LayoutValueKey { static let defaultValue = false }
+
+/// A dedicated target keeps resizing separate from card navigation and timeline scrolling.
+struct CardResizeHandle: View {
+    let card: DashboardCard
+    let resize: (CardWidth) -> Void
+    @EnvironmentObject var state: AppState
+    @GestureState private var translation: CGFloat = 0
+    var body: some View {
+        Image(systemName: "arrow.left.and.right")
+            .font(.caption.weight(.semibold)).foregroundStyle(card.accent)
+            .frame(width: 44, height: 44)
+            .background(card.accent.opacity(translation == 0 ? 0.08 : 0.2), in: Capsule())
+            .contentShape(Rectangle())
+            .gesture(DragGesture(minimumDistance: 8, coordinateSpace: .global)
+                .updating($translation) { value, offset, _ in offset = value.translation.width }
+                .onEnded { value in
+                    if value.translation.width < -40 { resize(.half) }
+                    else if value.translation.width > 40 { resize(.full) }
+                })
+            .accessibilityElement()
+            .accessibilityLabel(state.copy("Kartenbreite ändern", "Modifier la largeur", "Resize card width"))
+            .accessibilityValue(card.width == .half ? state.copy("Halb", "Moitié", "Half") : state.copy("Ganz", "Entière", "Full"))
+            .accessibilityHint(state.copy("Nach links ziehen für halb, nach rechts für ganz.", "Glisser à gauche pour moitié, à droite pour pleine largeur.", "Drag left for half, right for full width."))
+            .accessibilityAdjustableAction { direction in
+                switch direction { case .increment: resize(.full); case .decrement: resize(.half); @unknown default: break }
+            }
+            .accessibilityIdentifier("resize-card-" + card.id.rawValue)
+    }
+}
 /// Packs adjacent half-width cards together without changing the user's order.
 struct DashboardWidgetLayout: Layout {
     var singleColumn = false
