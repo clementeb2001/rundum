@@ -1,5 +1,11 @@
 # Prüfprotokoll · 2026-09-08
 
+## Ruhigeres Dashboard und Bearbeitungsmodus · 2026-09-10
+
+- Stift oben aktiviert Bearbeiten, Haken beendet es. Diagonaler, transparenter Eckgriff nur beim Bearbeiten; keine dauerhaft sichtbare Griff-Schaltfläche und kein zusätzlicher Platz darunter. Navigation während des Bearbeitens gesperrt, damit Ziehen keine Detailseite öffnet.
+- Dashboard-Wetterlogo auf 76 × 18 Punkte reduziert und innerhalb der Karte unten links platziert, ebenso in der Live-Vorschau. Quellenlink behält ein 44-Punkt-Tippziel. Wetterinhalte halten den Bereich frei; nebeneinanderliegende halbe Karten erhalten dieselbe Zeilenhöhe.
+- Drei UI-Tests erfolgreich: Griff-Sichtbarkeit samt Beenden/Neustart und Ziehen, gleiche Höhen benachbarter halber Karten, Wetterdetail-/Verlauf-Navigation. Signierter Build erfolgreich, auf dem persönlichen iPhone installiert und geöffnet. Tatsächliche WeatherKit-Attribution mit Live-Wetter sowie umfassende Accessibility-Prüfung nicht erneut im Simulator verifiziert.
+
 ## Ziehgriff, Kalender-Fokus und Wetterhinweis · 2026-09-10
 
 - Eigener 44-Punkt-Ziehbereich unten rechts: nach links auf halbe, nach rechts auf volle Breite; Speicherung beim Loslassen, VoiceOver-Verstellaktion und bisherige Breitenwahl bleiben verfügbar. Keine freie Pixelgrößen- oder Höhenänderung per Geste.

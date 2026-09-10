@@ -13,7 +13,7 @@ struct WeatherCredits: View {
     var body: some View {
         if let attribution = model.attribution {
             Link(destination: attribution.legalPageURL) {
-                AsyncImage(url: scheme == .dark ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL) { image in image.resizable().scaledToFit() } placeholder: { Text(attribution.serviceName).font(.caption) }.frame(width: 96, height: 22).accessibilityLabel(attribution.serviceName)
+                AsyncImage(url: scheme == .dark ? attribution.combinedMarkLightURL : attribution.combinedMarkDarkURL) { image in image.resizable().scaledToFit() } placeholder: { Text(attribution.serviceName).font(.caption2) }.frame(width: compact ? 76 : 96, height: compact ? 18 : 22).frame(minHeight: 44).contentShape(Rectangle()).accessibilityLabel(attribution.serviceName)
             }
             .frame(minHeight: 44)
             .accessibilityLabel(attribution.serviceName + " · " + state.copy("Datenquellen", "Sources", "Data sources"))
@@ -63,7 +63,7 @@ struct RichWeatherCardView: View {
             }
             if model.failed { Label(state.copy("Aktualisierung fehlgeschlagen", "Échec de la mise à jour", "Update failed"), systemImage: "exclamationmark.arrow.triangle.2.circlepath").font(.caption).foregroundStyle(.secondary) }
             if let updated = model.updated { Text(updated, format: .dateTime.day().month().hour().minute()).font(.caption2).foregroundStyle(.secondary) }
-        }.modifier(CardPanel(card: card)).task(id: model.place.id) { await model.refresh() }
+        }.padding(.bottom, 28).modifier(CardPanel(card: card)).task(id: model.place.id) { await model.refresh() }
     }
     private func hours(_ weather: Weather) -> [MetricPoint] {
         weather.hourlyForecast.forecast.filter { $0.date >= Date().addingTimeInterval(-3600) }.prefix(12).map { .init(date: $0.date, end: $0.date.addingTimeInterval(3600), value: $0.temperature.converted(to: .celsius).value) }

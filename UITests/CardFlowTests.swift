@@ -76,6 +76,8 @@ final class CardFlowTests: XCTestCase {
     }
     func testCornerDragResizesAndPersists() {
         let handle = app.descendants(matching: .any)["resize-card-steps"].firstMatch
+        XCTAssertFalse(handle.exists)
+        app.buttons["dashboard-edit"].tap()
         for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
         XCTAssertTrue(handle.waitForExistence(timeout: 5))
         let start = handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
@@ -84,12 +86,18 @@ final class CardFlowTests: XCTestCase {
         let card = app.buttons["dashboard-card-steps"]
         XCTAssertTrue(card.waitForExistence(timeout: 5))
         XCTAssertLessThan(card.frame.width, app.frame.width * 0.6)
+        XCTAssertFalse(handle.exists)
         screenshot("corner-resize-half")
+        app.buttons["dashboard-edit"].tap()
         for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
         let half = handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         half.press(forDuration: 0.05, thenDragTo: half.withOffset(CGVector(dx: 90, dy: 0)))
         app.terminate(); app.launch()
         XCTAssertGreaterThan(card.frame.width, app.frame.width * 0.7)
+        app.buttons["dashboard-edit"].tap()
+        XCTAssertTrue(handle.exists)
+        app.buttons["dashboard-edit"].tap()
+        XCTAssertFalse(handle.exists)
     }
     func testCalendarFocusDiffersFromOverview() {
         func template(_ name: String) {
@@ -125,6 +133,7 @@ final class CardFlowTests: XCTestCase {
         let second = app.buttons["dashboard-card-steps"]
         XCTAssertTrue(first.waitForExistence(timeout: 5)); XCTAssertTrue(second.exists)
         XCTAssertEqual(first.frame.minY, second.frame.minY, accuracy: 3)
+        XCTAssertEqual(first.frame.height, second.frame.height, accuracy: 3)
         XCTAssertGreaterThan(abs(first.frame.minX - second.frame.minX), 50)
         XCTAssertLessThan(first.frame.width, app.frame.width * 0.6)
         screenshot("two-half-width-widgets")

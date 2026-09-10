@@ -314,7 +314,8 @@ struct CardCustomizationView: View {
                     VStack(spacing: 10) {
                         if card.width == .half || (kind == .calendar && card.presentation == .value) { CompactDashboardCard(card: previewCard, events: calendar.events) }
                         else { CardRegistry.render(card: previewCard, events: calendar.events) }
-                        if kind == .weather { WeatherCredits(compact: card.width == .half).padding(.horizontal, 12) }
+                    }.overlay(alignment: .bottomLeading) {
+                        if kind == .weather { WeatherCredits(compact: true).padding(.leading, 16).padding(.bottom, 4) }
                     }.frame(maxWidth: card.width == .half ? 180 : .infinity).listRowInsets(EdgeInsets()).listRowBackground(Color.clear)
                 }
                 Section(state.copy("Widget-Vorlagen", "Modèles de widgets", "Widget templates")) {
@@ -443,7 +444,7 @@ struct CompactDashboardCard: View {
                 if card.id == .sleep { Text(state.copy("Schlafziel", "Objectif de sommeil", "Sleep goal")).font(.caption2).foregroundStyle(.secondary) }
             }
             Spacer(minLength: 0)
-        }.frame(maxWidth: .infinity, minHeight: card.id == .calendar && card.width == .full ? 120 : card.size == .small ? 180 : card.size == .large ? 270 : 230, alignment: .topLeading)
+        }.padding(.bottom, card.id == .weather ? 34 : 0).frame(maxWidth: .infinity, minHeight: card.id == .calendar && card.width == .full ? 120 : card.size == .small ? 180 : card.size == .large ? 270 : 230, alignment: .topLeading)
             .padding(14).background {
                 ZStack {
                     Color(uiColor: .secondarySystemGroupedBackground)

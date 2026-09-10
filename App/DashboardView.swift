@@ -10,6 +10,7 @@ struct DashboardView: View {
     @EnvironmentObject var weather: WeatherModel
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var library = false
+    @State private var editing = false
     @State private var dragging: CardKind?
     @State private var styling: DashboardCard?
     private var allEvents: [CalendarItem] {
@@ -21,7 +22,14 @@ struct DashboardView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    HStack { Brand(); Spacer(); Button { library = true } label: { Image(systemName: "slider.horizontal.3").padding(12).background(.background, in: Circle()) }.accessibilityLabel(state.copy("Dashboard anpassen", "Personnaliser le tableau de bord", "Customize dashboard")).accessibilityIdentifier("dashboard-customize") }
+                    HStack {
+                        Brand(); Spacer()
+                        Button { withAnimation(.easeInOut(duration: 0.2)) { editing.toggle() } } label: {
+                            Image(systemName: editing ? "checkmark" : "pencil").frame(width: 44, height: 44).background(.background, in: Circle())
+                        }.accessibilityLabel(editing ? state.copy("Fertig", "Terminé", "Done") : state.copy("Dashboard bearbeiten", "Modifier le tableau de bord", "Edit dashboard")).accessibilityIdentifier("dashboard-edit")
+                        Button { library = true } label: { Image(systemName: "slider.horizontal.3").padding(12).background(.background, in: Circle()) }.accessibilityLabel(state.copy("Dashboard anpassen", "Personnaliser le tableau de bord", "Customize dashboard")).accessibilityIdentifier("dashboard-customize")
+                    }
+                    if editing { Text(state.copy("An der Ecke ziehen zum Vergrößern oder Verkleinern.", "Glisse le coin pour changer la largeur.", "Drag the corner to change the width.")).font(.footnote).foregroundStyle(.secondary) }
                     VStack(alignment: .leading, spacing: 7) {
                         Text(Date(), format: .dateTime.weekday(.wide).day().month(.wide)).font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
                         Text(state.copy("Hallo, neuer Tag.", "Bonjour, nouvelle journée.", "Hello, new day.")).font(.system(.largeTitle, design: .rounded, weight: .bold))
@@ -49,21 +57,25 @@ struct DashboardView: View {
                                 CardRegistry.render(card: card, events: allEvents)
                             }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-" + card.id.rawValue)
                             }
-                            if card.id == .weather { WeatherCredits(compact: card.width == .half).padding(.horizontal, card.width == .half ? 0 : 12) }
                         }
-                            .padding(.bottom, 24)
+                            .allowsHitTesting(!editing)
+                            .overlay(alignment: .bottomLeading) {
+                                if card.id == .weather { WeatherCredits(compact: true).padding(.leading, 16).padding(.bottom, 4).allowsHitTesting(!editing) }
+                            }
                             .overlay(alignment: .bottomTrailing) {
+                                if editing {
                                 CardResizeHandle(card: card) { width in
                                     guard let index = state.configuration.cards.firstIndex(where: { $0.id == card.id }) else { return }
                                     withAnimation(.easeInOut(duration: 0.2)) { state.configuration.cards[index].width = width }
                                     state.changed(cloud: cloud)
+                                }
                                 }
                             }
                             .layoutValue(key: HalfCardLayoutKey.self, value: card.width == .half)
                             .contextMenu { Button { styling = card } label: { Label(state.copy("Karte gestalten", "Personnaliser la carte", "Customize card"), systemImage: "paintpalette") } }
                             .onDrag { dragging = card.id; return NSItemProvider(object: card.id.rawValue as NSString) }
                             .onDrop(of: [UTType.text], isTargeted: nil) { providers in
-                                guard !providers.isEmpty, let dragging, dragging != card.id,
+                                guard editing, !providers.isEmpty, let dragging, dragging != card.id,
                                       let from = state.configuration.cards.firstIndex(where: { $0.id == dragging }), let to = state.configuration.cards.firstIndex(where: { $0.id == card.id }) else { return false }
                                 withAnimation { state.configuration.cards.move(fromOffsets: IndexSet(integer: from), toOffset: to > from ? to + 1 : to) }
                                 self.dragging = nil; state.changed(cloud: cloud); return true
@@ -94,10 +106,9 @@ struct CardResizeHandle: View {
     @EnvironmentObject var state: AppState
     @GestureState private var translation: CGFloat = 0
     var body: some View {
-        Image(systemName: "arrow.left.and.right")
-            .font(.caption.weight(.semibold)).foregroundStyle(card.accent)
+        Image(systemName: "line.3.horizontal")
+            .font(.system(size: 14, weight: .medium)).rotationEffect(.degrees(-45)).foregroundStyle(card.accent.opacity(translation == 0 ? 0.65 : 1))
             .frame(width: 44, height: 44)
-            .background(card.accent.opacity(translation == 0 ? 0.08 : 0.2), in: Capsule())
             .contentShape(Rectangle())
             .gesture(DragGesture(minimumDistance: 8, coordinateSpace: .global)
                 .updating($translation) { value, offset, _ in offset = value.translation.width }
@@ -128,8 +139,8 @@ struct DashboardWidgetLayout: Layout {
             let paired = half && index + 1 < subviews.count && subviews[index + 1][HalfCardLayoutKey.self]
             let secondHeight = paired ? subviews[index + 1].sizeThatFits(.init(width: cellWidth, height: nil)).height : 0
             let height = max(firstHeight, secondHeight)
-            frames.append(.init(x: 0, y: y, width: cellWidth, height: firstHeight))
-            if paired { frames.append(.init(x: cellWidth + gap, y: y, width: cellWidth, height: secondHeight)) }
+            frames.append(.init(x: 0, y: y, width: cellWidth, height: paired ? height : firstHeight))
+            if paired { frames.append(.init(x: cellWidth + gap, y: y, width: cellWidth, height: height)) }
             y += height + gap; index += paired ? 2 : 1
         }
         return frames
