@@ -30,6 +30,13 @@ struct Copy {
     func size(_ size: CardSize) -> String {
         switch size { case .small: return self("Klein", "Petit", "Small"); case .medium: return self("Mittel", "Moyen", "Medium"); case .large: return self("Groß", "Grand", "Large") }
     }
+    func title(_ scope: CalendarScope) -> String {
+        switch scope {
+        case .mine: return self("Mein", "Perso", "Mine")
+        case .shared: return self("Gemeinsam", "Partagé", "Shared")
+        case .both: return self("Beide", "Les deux", "Both")
+        }
+    }
     func title(_ appearance: AppAppearance) -> String {
         switch appearance {
         case .system: return self("Automatisch (iPhone)", "Automatique (iPhone)", "Automatic (iPhone)")

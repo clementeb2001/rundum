@@ -250,14 +250,15 @@ struct RichMetricCardView: View {
     private var upcoming: [CalendarItem] {
         let range = HistoryPeriod.day.interval(containing: calendarDay)
         var seen = Set<String>()
-        return (calendar.history(in: range) + (interactiveCalendar ? events : [])).filter {
+        let local = state.calendarScope != .shared ? calendar.history(in: range) : []
+        return (local + (interactiveCalendar ? events : [])).filter {
             $0.start < range.end && $0.end > range.start && seen.insert($0.id).inserted
         }.sorted { $0.start < $1.start }
     }
     @ViewBuilder private var calendarBody: some View {
         let stripStart = Calendar.current.startOfDay(for: Date())
         let stripEnd = Calendar.current.date(byAdding: .day, value: 7, to: stripStart)!
-        let markedEvents = calendar.history(in: DateInterval(start: stripStart, end: stripEnd)) + events
+        let markedEvents = (state.calendarScope != .shared ? calendar.history(in: DateInterval(start: stripStart, end: stripEnd)) : []) + events
         HStack {
             ForEach(0..<7, id: \.self) { offset in
                 let day = Calendar.current.date(byAdding: .day, value: offset, to: Date())!

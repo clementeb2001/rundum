@@ -14,10 +14,15 @@ struct DashboardView: View {
     @State private var dragging: CardKind?
     @State private var styling: DashboardCard?
     @Namespace private var cardZoom
+    private var sharedItems: [CalendarItem] {
+        cloud.events.map { event in CalendarItem(id: event.id.uuidString, title: event.title, start: event.starts_at, end: event.ends_at, allDay: false, source: cloud.calendars.first { $0.id == event.calendar_id }?.name ?? "Rundum") }
+    }
     private var allEvents: [CalendarItem] {
         let now = Date()
         let end = Calendar.current.date(byAdding: .day, value: 7, to: now) ?? now
-        return (calendar.events + cloud.events.map { event in CalendarItem(id: event.id.uuidString, title: event.title, start: event.starts_at, end: event.ends_at, allDay: false, source: cloud.calendars.first { $0.id == event.calendar_id }?.name ?? "Rundum") }).filter { $0.end >= now && $0.start < end }.sorted { $0.start < $1.start }
+        let local = state.calendarScope != .shared ? calendar.events : []
+        let shared = state.calendarScope != .mine ? sharedItems : []
+        return (local + shared).filter { $0.end >= now && $0.start < end }.sorted { $0.start < $1.start }
     }
     var body: some View {
         NavigationStack {
@@ -36,6 +41,11 @@ struct DashboardView: View {
                         Text(state.copy("Hallo, neuer Tag.", "Bonjour, nouvelle journée.", "Hello, new day.")).font(.system(.largeTitle, design: .rounded, weight: .bold))
                         Text(state.copy("Alles Wichtige. An deinem Platz.", "L’essentiel. Au même endroit.", "Everything that matters. In your space.")).foregroundStyle(.secondary)
                     }
+                    if cloud.session != nil && state.configuration.visibleCards(isPro: purchases.isPro).contains(where: { $0.id == .calendar }) {
+                        Picker(state.copy("Kalenderauswahl", "Choix du calendrier", "Calendar selection"), selection: $state.calendarScope) {
+                            ForEach(CalendarScope.allCases) { scope in Text(state.copy.title(scope)).tag(scope) }
+                        }.pickerStyle(.segmented).accessibilityIdentifier("calendar-scope")
+                    }
                     if let error = state.syncError { Notice(text: state.copy("Offline gespeichert. Synchronisierung ausstehend: ", "Enregistré localement. Synchronisation en attente : ", "Saved locally. Sync pending: ") + error) }
                     if state.configuration.cards.isEmpty {
                         VStack(spacing: 14) { Image(systemName: "square.grid.2x2").font(.largeTitle); Text(state.copy("Hier beginnt dein Überblick.", "Ton aperçu commence ici.", "Your overview starts here.")); Button(state.copy("Karten auswählen", "Choisir les cartes", "Choose cards")) { library = true } }.frame(maxWidth: .infinity).padding(32).background(.background, in: RoundedRectangle(cornerRadius: 24))
@@ -47,9 +57,7 @@ struct DashboardView: View {
                                     Group { if card.id == .weather { WeatherDetailView() } else { CardDetailView(kind: card.id) } }.zoomDestination(card.id, cardZoom)
                                 } label: { CompactDashboardCard(card: card, events: allEvents) }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-" + card.id.rawValue)
                             } else if card.id == .calendar {
-                                RichMetricCardView(card: card, events: cloud.events.map { event in
-                                    CalendarItem(id: event.id.uuidString, title: event.title, start: event.starts_at, end: event.ends_at, allDay: false, source: cloud.calendars.first { $0.id == event.calendar_id }?.name ?? "Rundum")
-                                }, interactiveCalendar: true)
+                                RichMetricCardView(card: card, events: state.calendarScope != .mine ? sharedItems : [], interactiveCalendar: true)
                             } else {
                             NavigationLink {
                                 Group {
