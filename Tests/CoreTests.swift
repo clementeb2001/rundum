@@ -1,6 +1,14 @@
 import XCTest
 @testable import RundumCore
 final class CoreTests: XCTestCase {
+    func testAppleNonceHashMatchesSHA256() {
+        XCTAssertEqual(AppleSignInNonce.hash("rundum"), "146f4825d6efd1f99e376e6b1206cffed0da1e7216ebc76488237ef0066ff20c")
+    }
+    func testAppleNonceUsesRequestedLengthAndAllowedCharacters() throws {
+        let nonce = try AppleSignInNonce.make(length: 48)
+        XCTAssertEqual(nonce.count, 48)
+        XCTAssertTrue(nonce.allSatisfy { "0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._".contains($0) })
+    }
     func testCloudConfigurationAcceptsOnlyPublicKeys() {
         XCTAssertTrue(PublicCloudKeyValidation.accepts("sb_publishable_12345678901234567890"))
         XCTAssertTrue(PublicCloudKeyValidation.accepts("e30.eyJyb2xlIjoiYW5vbiJ9.signature"))

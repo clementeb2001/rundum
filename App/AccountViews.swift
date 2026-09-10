@@ -1,5 +1,6 @@
 import SwiftUI
 import StoreKit
+import AuthenticationServices
 
 struct SettingsView: View {
     @EnvironmentObject var state: AppState
@@ -74,6 +75,7 @@ struct AuthView: View {
     @State private var busy = false
     @State private var message: String?
     @State private var setup = false
+    @State private var appleNonce: String?
     var body: some View {
         NavigationStack {
             Form {
@@ -84,6 +86,43 @@ struct AuthView: View {
                 if cloud.configured {
                     Section { NavigationLink(LegalPage.privacy.title(state.copy)) { LegalView(page: .privacy) }; NavigationLink(LegalPage.terms.title(state.copy)) { LegalView(page: .terms) } }
                     Section {
+                        SignInWithAppleButton(.continue) { request in
+                            do {
+                                let nonce = try AppleSignInNonce.make()
+                                appleNonce = nonce
+                                request.requestedScopes = [.fullName, .email]
+                                request.nonce = AppleSignInNonce.hash(nonce)
+                            } catch {
+                                appleNonce = nil
+                                message = error.localizedDescription
+                            }
+                        } onCompletion: { result in
+                            switch result {
+                            case .success(let authorization):
+                                guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+                                      let identityToken = credential.identityToken,
+                                      let nonce = appleNonce else {
+                                    message = state.copy("Apple hat keine gültigen Anmeldedaten geliefert.", "Apple n’a fourni aucune donnée de connexion valide.", "Apple did not provide valid sign-in credentials.")
+                                    return
+                                }
+                                Task {
+                                    busy = true; defer { busy = false; appleNonce = nil }
+                                    do { try await cloud.signInWithApple(identityToken: identityToken, nonce: nonce); dismiss() }
+                                    catch { message = error.localizedDescription }
+                                }
+                            case .failure(let error):
+                                appleNonce = nil
+                                if (error as? ASAuthorizationError)?.code != .canceled { message = error.localizedDescription }
+                            }
+                        }
+                        .signInWithAppleButtonStyle(.black)
+                        .frame(height: 50)
+                        .disabled(busy)
+                        .accessibilityIdentifier("sign-in-with-apple")
+                    } footer: {
+                        Text(state.copy("Nutze deine Apple-ID, um dein Rundum-Konto sicher zu erstellen oder dich anzumelden.", "Utilise ton identifiant Apple pour créer ton compte Rundum ou te connecter en toute sécurité.", "Use your Apple ID to securely create or access your Rundum account."))
+                    }
+                    Section(state.copy("Oder mit E-Mail", "Ou avec e-mail", "Or with email")) {
                         TextField("E-Mail", text: $email).textContentType(.emailAddress).keyboardType(.emailAddress).textInputAutocapitalization(.never).autocorrectionDisabled()
                         SecureField(state.copy("Passwort", "Mot de passe", "Password"), text: $password).textContentType(register ? .newPassword : .password)
                         Toggle(state.copy("Neues Konto erstellen", "Créer un compte", "Create an account"), isOn: $register)

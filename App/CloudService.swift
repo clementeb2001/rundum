@@ -23,6 +23,7 @@ enum CloudFailure: LocalizedError {
     case configuration, message(String)
     var errorDescription: String? { switch self { case .configuration: return "Cloud configuration missing (SUPABASE_URL / SUPABASE_ANON_KEY)."; case .message(let text): return text } }
 }
+
 enum SessionKeychain {
     static let service = "app.rundum.session"
     static func read() -> Data? {
@@ -97,6 +98,14 @@ enum CloudConfigurationStore {
         if let session = try? Self.decoder.decode(CloudSession.self, from: data) { try persist(session); return true }
         if register { return false }
         throw CloudFailure.message("Invalid authentication response")
+    }
+    func signInWithApple(identityToken: Data, nonce: String) async throws {
+        guard let token = String(data: identityToken, encoding: .utf8), !token.isEmpty else {
+            throw CloudFailure.message("Apple hat kein gültiges Anmelde-Token geliefert.")
+        }
+        let body = try JSONSerialization.data(withJSONObject: ["provider": "apple", "id_token": token, "nonce": nonce])
+        let data = try await request("/auth/v1/token?grant_type=id_token", method: "POST", body: body, authenticated: false)
+        try persist(Self.decoder.decode(CloudSession.self, from: data))
     }
     func signOut() async {
         _ = try? await request("/auth/v1/logout", method: "POST")

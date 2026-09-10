@@ -1,6 +1,6 @@
 # Rundum
 
-**Aktueller persönlicher Teststand:** Wetter mit Apple WeatherKit ist als sechste Dashboard-Karte integriert. Ortsauswahl, optionale einmalige Standortabfrage, Stunden-/Tagesvorschau und Apple-Attribution sind enthalten. Impressum, Datenschutz und Nutzungsbedingungen sind in den Einstellungen als **Testfassungen** erreichbar; Betreiberangaben können für den privaten Test noch fehlen. Siehe **[iPhone-Testanleitung](docs/IPHONE_TEST.md)**. Kein Supabase-Projekt ist eingerichtet; Cloud-Funktionen sind deshalb noch nicht betriebsbereit.
+**Aktueller persönlicher Teststand:** Wetter mit Apple WeatherKit ist als sechste Dashboard-Karte integriert. Ortsauswahl, optionale einmalige Standortabfrage, Stunden-/Tagesvorschau und Apple-Attribution sind enthalten. Impressum, Datenschutz und Nutzungsbedingungen sind in den Einstellungen als **Testfassungen** erreichbar; Betreiberangaben können für den privaten Test noch fehlen. Siehe **[iPhone-Testanleitung](docs/IPHONE_TEST.md)**. Cloud-Anmeldung ist per E-Mail/Passwort und nativ mit Apple vorbereitet; ein Supabase-Projekt muss pro Installation einmalig mit Projekt-URL und öffentlichem Schlüssel verbunden werden.
 
 Native SwiftUI-App für iOS 16+: persönlicher Tagesüberblick, modulare Dashboard-Karten, lokale Apple-Health-Daten und gemeinsame Kalender. Deutsch, Französisch und Englisch. Keine Drittanbieter-SDKs erforderlich.
 
@@ -24,7 +24,7 @@ Das Xcode-Projekt und das App-Icon sind bereits enthalten. Nach Änderungen an d
 - EventKit liest ausgewählte iOS-Kalender für die nächsten sieben Tage. Google-Kalender müssen zuvor in iOS eingebunden sein. Private Termine verlassen das Gerät nicht, außer dem ausdrücklich aktivierten lokalen Widget-Snapshot.
 - HealthKit liest Schritte, letzte Nacht, heutige Herzfrequenz und Trainingsminuten. Überlappende Schlafquellen werden zusammengeführt. Keine Health-Daten im Backend, in Dateien oder im Homescreen-Widget. Keine Datenfreigabe an Familienmitglieder.
 - Lokale, pro Konto getrennte Dashboard-Konfiguration; Cloud-Sync bei Änderungen, App-Aktivierung und manuellem Aktualisieren. Einfaches Last-write-wins für vollständige Layouts; Offline-Layouts bleiben erhalten.
-- Supabase-E-Mail/Passwort-Anmeldung, E-Mail-Bestätigung, Keychain-Sitzung, Token-Erneuerung, Abmeldung und Kontolöschung.
+- Supabase-E-Mail/Passwort-Anmeldung sowie native Apple-Anmeldung mit sicherem Nonce-/ID-Token-Austausch, Keychain-Sitzung, Token-Erneuerung, Abmeldung und Kontolöschung.
 - Eigenständige gemeinsame Rundum-Kalender: erstellen, per einmaligem Code beitreten, Termine hinzufügen/bearbeiten/löschen, Kalender verlassen/löschen. Einladungen laufen nach sieben Tagen ab. RLS trennt Konten und Mitgliedschaften; nur Ersteller oder Kalendereigentümer dürfen Termine ändern/löschen.
 - WidgetKit-Erweiterung für kleine/mittlere Homescreen-Widgets. Nächster privater Termin nur nach separater Zustimmung in Einstellungen; veraltete Termine werden ausgeblendet.
 - Semantische Schriftgrößen, Dynamic Type, Systemkomponenten und VoiceOver-Beschriftungen. Für tatsächliche Barrierefreiheit steht die Geräteprüfung noch aus.
@@ -36,6 +36,8 @@ Das Xcode-Projekt und das App-Icon sind bereits enthalten. Nach Änderungen an d
 3. E-Mail/Passwort-Auth, E-Mail-Bestätigung, Versand und Rate Limits im Projekt konfigurieren. Der Anmeldevorgang verwendet keine frei erfundenen Zugangsdaten.
 4. Projekt-URL und **öffentlichen anon/publishable key** entweder in der App unter **Gemeinsam → Anmeldung einrichten** sicher hinterlegen oder für feste Entwicklungsbuilds `Config/Local.xcconfig.example` nach `Config/Local.xcconfig` kopieren. Niemals `service_role` verwenden; die App lehnt solche Schlüssel ab. `Local.xcconfig` ist von Git ausgeschlossen.
 5. Mit zwei Testkonten Anmeldung, Einladung, RLS, Kontowechsel, Offline-Sync und Löschung prüfen. Das bereitgestellte `Backend/access_checks.sql` enthält zusätzliche transaktionale SQL-Prüfungen für eine isolierte Testdatenbank.
+
+Für **Mit Apple anmelden** zusätzlich die Capability für die App-ID `app.rundum.ios` im Apple Developer Portal aktivieren und im Supabase-Apple-Provider dieselbe Bundle-ID als Client ID eintragen. Der native Ablauf benötigt keine Services ID und keinen regelmäßig zu erneuernden OAuth-Secret-Key.
 
 Die Cloud ist im ausgelieferten Projekt noch nicht mit einem echten Dienst verbunden. Ohne diese Konfiguration erklärt die App den Zustand und funktioniert lokal weiter. Nach der einmaligen Einrichtung sind E-Mail-Anmeldung und Kontoerstellung direkt in Rundum verfügbar; für Familienkalender muss zusätzlich Schritt 2 ausgeführt sein.
 

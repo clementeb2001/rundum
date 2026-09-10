@@ -1,5 +1,12 @@
 # Prüfprotokoll · 2026-09-08
 
+## Native Apple-Anmeldung · 2026-09-10
+
+- Native „Mit Apple anmelden“-Schaltfläche mit AuthenticationServices ergänzt. Ein kryptografisch sicherer Nonce wird SHA-256-gehasht an Apple übergeben; das ursprüngliche Nonce und Apples ID-Token werden anschließend direkt bei Supabase gegen eine Sitzung eingetauscht.
+- Apple-Sign-in-Entitlement für das App-Target ergänzt. Die bestehende E-Mail-/Passwort-Anmeldung bleibt als Alternative erhalten; Abmeldung, Sitzungserneuerung und Kontolöschung verwenden dieselbe Supabase-Sitzung.
+- Supabase-Migration nach einem teilweise ausgeführten ersten Lauf wiederholbar gemacht: Tabellen und Indexe werden nur bei Bedarf angelegt, Funktionen ersetzt und RLS-Richtlinien kontrolliert neu erstellt.
+- 20 Core-Tests erfolgreich, darunter SHA-256-Testvektor und sichere Nonce-Erzeugung. Vollständiger signierter Release-Build inklusive Widget erfolgreich; die Signatur enthält das Apple-Sign-in-Entitlement. Der Build wurde auf dem verbundenen iPhone installiert und geöffnet. Der echte Apple-Dialog und abschließende Supabase-Tokenaustausch benötigen die Interaktion des Nutzers und sind noch nicht bestätigt.
+
 ## Datenzustände, Belastungstests und Anmeldung · 2026-09-10
 
 - Health-Karten unterscheiden Laden, Fehler, fehlende Werte und letzte erfolgreiche Aktualisierung; fehlende Daten bleiben „—“ statt null. Wetter unterscheidet Laden, Verbindungsfehler und noch nicht geladene Daten.

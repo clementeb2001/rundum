@@ -4,21 +4,21 @@ create schema if not exists private;
 revoke all on schema private from public;
 grant usage on schema private to authenticated;
 
-create table public.dashboard_configs (
+create table if not exists public.dashboard_configs (
   user_id uuid primary key references auth.users(id) on delete cascade,
   configuration jsonb not null check (jsonb_typeof(configuration) = 'object' and octet_length(configuration::text) < 32768)
 );
-create table public.shared_calendars (
+create table if not exists public.shared_calendars (
   id uuid primary key default gen_random_uuid(),
   name text not null check (length(trim(name)) between 1 and 100),
   owner_id uuid not null references auth.users(id) on delete cascade
 );
-create table public.calendar_members (
+create table if not exists public.calendar_members (
   calendar_id uuid not null references public.shared_calendars(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
   primary key (calendar_id, user_id)
 );
-create table public.shared_events (
+create table if not exists public.shared_events (
   id uuid primary key default gen_random_uuid(),
   calendar_id uuid not null references public.shared_calendars(id) on delete cascade,
   title text not null check (length(trim(title)) between 1 and 300),
@@ -26,16 +26,16 @@ create table public.shared_events (
   ends_at timestamptz not null check (ends_at > starts_at),
   created_by uuid not null references auth.users(id) on delete cascade
 );
-create index shared_events_window on public.shared_events(calendar_id, starts_at);
-create table private.calendar_invites (
+create index if not exists shared_events_window on public.shared_events(calendar_id, starts_at);
+create table if not exists private.calendar_invites (
   calendar_id uuid primary key references public.shared_calendars(id) on delete cascade,
   token_hash text not null unique,
   expires_at timestamptz not null
 );
-create function private.is_calendar_member(target uuid) returns boolean language sql stable security definer set search_path = '' as $$
+create or replace function private.is_calendar_member(target uuid) returns boolean language sql stable security definer set search_path = '' as $$
  select exists(select 1 from public.calendar_members where calendar_id = target and user_id = auth.uid());
 $$;
-create function private.owns_calendar(target uuid) returns boolean language sql stable security definer set search_path = '' as $$
+create or replace function private.owns_calendar(target uuid) returns boolean language sql stable security definer set search_path = '' as $$
  select exists(select 1 from public.shared_calendars where id = target and owner_id = auth.uid());
 $$;
 revoke all on function private.is_calendar_member(uuid), private.owns_calendar(uuid) from public;
@@ -46,6 +46,13 @@ alter table public.shared_calendars enable row level security;
 alter table public.calendar_members enable row level security;
 alter table public.shared_events enable row level security;
 alter table private.calendar_invites enable row level security;
+drop policy if exists own_config on public.dashboard_configs;
+drop policy if exists member_calendars on public.shared_calendars;
+drop policy if exists own_membership on public.calendar_members;
+drop policy if exists read_events on public.shared_events;
+drop policy if exists insert_events on public.shared_events;
+drop policy if exists delete_events on public.shared_events;
+drop policy if exists update_events on public.shared_events;
 create policy own_config on public.dashboard_configs for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy member_calendars on public.shared_calendars for select to authenticated using (private.is_calendar_member(id));
 create policy own_membership on public.calendar_members for select to authenticated using (user_id = auth.uid());
@@ -61,7 +68,7 @@ grant select on public.shared_calendars, public.calendar_members to authenticate
 grant select, insert, delete on public.shared_events to authenticated;
 grant update(title, starts_at, ends_at) on public.shared_events to authenticated;
 
-create function public.create_shared_calendar(calendar_name text) returns uuid language plpgsql security definer set search_path = '' as $$
+create or replace function public.create_shared_calendar(calendar_name text) returns uuid language plpgsql security definer set search_path = '' as $$
 declare result uuid; actor uuid := auth.uid();
 begin
  if actor is null then raise exception 'Authentication required'; end if;
@@ -73,7 +80,7 @@ begin
  return result;
 end;
 $$;
-create function public.create_calendar_invite(target_calendar uuid) returns text language plpgsql security definer set search_path = '' as $$
+create or replace function public.create_calendar_invite(target_calendar uuid) returns text language plpgsql security definer set search_path = '' as $$
 declare token text;
 begin
  if not private.owns_calendar(target_calendar) then raise exception 'Calendar owner required'; end if;
@@ -83,7 +90,7 @@ begin
  return token;
 end;
 $$;
-create function public.join_calendar(invite_code text) returns uuid language plpgsql security definer set search_path = '' as $$
+create or replace function public.join_calendar(invite_code text) returns uuid language plpgsql security definer set search_path = '' as $$
 declare target uuid; actor uuid := auth.uid();
 begin
  if actor is null then raise exception 'Authentication required'; end if;
@@ -94,14 +101,14 @@ begin
  return target;
 end;
 $$;
-create function public.leave_calendar(target_calendar uuid) returns void language plpgsql security definer set search_path = '' as $$
+create or replace function public.leave_calendar(target_calendar uuid) returns void language plpgsql security definer set search_path = '' as $$
 begin
  if auth.uid() is null then raise exception 'Authentication required'; end if;
  if private.owns_calendar(target_calendar) then delete from public.shared_calendars where id = target_calendar;
  else delete from public.calendar_members where calendar_id = target_calendar and user_id = auth.uid(); end if;
 end;
 $$;
-create function public.delete_own_account() returns void language plpgsql security definer set search_path = '' as $$
+create or replace function public.delete_own_account() returns void language plpgsql security definer set search_path = '' as $$
 begin
  if auth.uid() is null then raise exception 'Authentication required'; end if;
  delete from auth.users where id = auth.uid();

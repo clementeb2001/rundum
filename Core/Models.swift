@@ -1,4 +1,26 @@
 import Foundation
+import CryptoKit
+import Security
+
+public enum AppleSignInNonce {
+    public static func make(length: Int = 32) throws -> String {
+        precondition(length > 0)
+        let characters = Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+        var result = ""
+        while result.count < length {
+            var byte: UInt8 = 0
+            guard SecRandomCopyBytes(kSecRandomDefault, 1, &byte) == errSecSuccess else {
+                throw NSError(domain: "app.rundum.apple-sign-in", code: -1)
+            }
+            if byte < characters.count { result.append(characters[Int(byte)]) }
+        }
+        return result
+    }
+
+    public static func hash(_ value: String) -> String {
+        SHA256.hash(data: Data(value.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+}
 
 public struct CardKind: RawRepresentable, Codable, Hashable, Identifiable {
     public let rawValue: String
