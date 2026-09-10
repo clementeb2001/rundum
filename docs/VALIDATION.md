@@ -1,5 +1,14 @@
 # Prüfprotokoll · 2026-09-08
 
+## Gemeinsam-Tab aufgeräumt: Verwaltung in eigener Einstellungsansicht · 2026-09-10
+
+Überarbeitung der „Gemeinsam"-Ansicht für ein ruhigeres, eleganteres Layout. **Nicht build-verifiziert** (kein Xcode in dieser Umgebung).
+
+- **Hauptseite zeigt nur noch das Wesentliche:** Monatsraster, Tagesagenda des gewählten Tages und „Termin hinzufügen". Der große Intro-Header sowie alle Verwaltungssektionen wurden entfernt; der Navigationstitel ist der Kalendername.
+- **Neue `SharedCalendarSettingsView`** (Zahnrad oben rechts) bündelt: aktiven Kalender wählen, Teilen & Mitglieder (Einladung erstellen/teilen, Code), Einladung annehmen, neuen Kalender erstellen sowie Kalender löschen/verlassen.
+- **Klare Leerzustände:** Nicht angemeldet → zentrierte Anmelde-Karte; angemeldet ohne Kalender → zentrierte Karte mit „Kalender erstellen oder beitreten", die direkt die Einstellungsansicht öffnet.
+- Zugriffs-IDs: `family-settings`, `family-start` neu; `family-auth`, `family-add-event`, `family-invite` bleiben.
+
 ## Gemeinsam-Tab: geteilter Familienkalender mit Monatsansicht · 2026-09-10
 
 Ausbau der „Gemeinsam"-Ansicht von einer reinen Terminliste zu einer echten Kalenderansicht (TimeTree-/FamilyWall-Stil) auf dem bestehenden Supabase-Backend. **Nicht build-verifiziert** (kein Xcode in dieser Umgebung).
