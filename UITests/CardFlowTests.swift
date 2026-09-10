@@ -139,7 +139,6 @@ final class CardFlowTests: XCTestCase {
         for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
         XCTAssertTrue(handle.waitForExistence(timeout: 5))
         handle.tap()
-        XCTAssertTrue(app.buttons["Klein"].waitForExistence(timeout: 5)); app.buttons["Klein"].tap()
         app.terminate(); app.launch()
         let card = app.buttons["dashboard-card-steps"]
         XCTAssertTrue(card.waitForExistence(timeout: 5))
@@ -149,13 +148,21 @@ final class CardFlowTests: XCTestCase {
         app.buttons["dashboard-edit"].tap()
         for _ in 0..<5 where !handle.isHittable { app.swipeUp() }
         handle.tap()
-        XCTAssertTrue(app.buttons["Breit"].waitForExistence(timeout: 5)); app.buttons["Breit"].tap()
         app.terminate(); app.launch()
         XCTAssertGreaterThan(card.frame.width, app.frame.width * 0.7)
         app.buttons["dashboard-edit"].tap()
         XCTAssertTrue(handle.exists)
         app.buttons["dashboard-edit"].tap()
         XCTAssertFalse(handle.exists)
+    }
+    func testEditModeExposesMovableCardSurface() {
+        XCTAssertFalse(app.descendants(matching: .any)["move-card-steps"].exists)
+        app.buttons["dashboard-edit"].tap()
+        let surface = app.descendants(matching: .any)["move-card-steps"].firstMatch
+        for _ in 0..<5 where !surface.isHittable { app.swipeUp() }
+        XCTAssertTrue(surface.waitForExistence(timeout: 5))
+        XCTAssertTrue(surface.isHittable)
+        XCTAssertTrue(app.descendants(matching: .any)["resize-card-steps"].firstMatch.isHittable)
     }
     func testCalendarFocusDiffersFromOverview() {
         func template(_ name: String) {

@@ -67,12 +67,24 @@ struct DashboardView: View {
                                 CardRegistry.render(card: card, events: allEvents)
                             }.buttonStyle(.plain).accessibilityIdentifier("dashboard-card-" + card.id.rawValue)
                             }
-                        }.allowsHitTesting(!editing)
+                        }
                             .overlay(alignment: .bottomLeading) {
                                 if card.id == .weather { WeatherCredits(compact: true).padding(.leading, 16).padding(.bottom, 4).allowsHitTesting(!editing) }
                             }
                             .overlay {
-                                if editing { Color.clear.contentShape(RoundedRectangle(cornerRadius: 24)) }
+                                if editing {
+                                    Color.clear
+                                        .contentShape(RoundedRectangle(cornerRadius: 24))
+                                        .onTapGesture { }
+                                        .onDrag {
+                                            dragging = card.id
+                                            return NSItemProvider(object: card.id.rawValue as NSString)
+                                        } preview: {
+                                            CardDragPreview(card: card)
+                                        }
+                                        .accessibilityLabel(state.copy.card(card.id) + " · " + state.copy("zum Verschieben halten", "maintenir pour déplacer", "hold to move"))
+                                        .accessibilityIdentifier("move-card-" + card.id.rawValue)
+                                }
                             }
                             .overlay(alignment: .topLeading) {
                                 if editing {
@@ -83,7 +95,10 @@ struct DashboardView: View {
                                 }
                             }
                             .overlay(alignment: .topTrailing) {
-                                if editing { CardEditMenu(card: card, resize: { resize(card, to: $0) }, customize: { styling = card }, remove: { remove(card) }).offset(x: 7, y: -7) }
+                                if editing {
+                                    CardResizeButton(card: card) { resize(card, to: card.width == .half ? .full : .half) }
+                                        .offset(x: 7, y: -7)
+                                }
                             }
                             .layoutValue(key: HalfCardLayoutKey.self, value: card.width == .half)
                             .cardScrollTransition().scaleEffect(dragging == card.id ? 1.035 : 1)
@@ -93,14 +108,6 @@ struct DashboardView: View {
                             .zoomSource(card.id, cardZoom)
                             .contextMenu { Button { styling = card } label: { Label(state.copy("Karte gestalten", "Personnaliser la carte", "Customize card"), systemImage: "paintpalette") } }
                             .onLongPressGesture(minimumDuration: 0.45) { if !editing { withAnimation(.rundumSnappy) { editing = true } } }
-                            .onDrag {
-                                if !editing { withAnimation(.rundumSnappy) { editing = true } }
-                                dragging = card.id
-                                return NSItemProvider(object: card.id.rawValue as NSString)
-                            } preview: {
-                                RoundedRectangle(cornerRadius: 22).fill(card.accent.opacity(0.18)).frame(width: card.width == .half ? 150 : 300, height: 120)
-                                    .overlay { Label(state.copy.card(card.id), systemImage: card.id.symbol).font(.headline).foregroundStyle(card.accent) }
-                            }
                             .onDrop(of: [UTType.text], delegate: DashboardCardDropDelegate(target: card.id, dragging: $dragging, cards: $state.configuration.cards) { state.changed(cloud: cloud) })
                     } }
                     Button { library = true } label: { Label(state.copy("Dein Dashboard gestalten", "Personnaliser ton tableau de bord", "Make this dashboard yours"), systemImage: "plus.circle").frame(maxWidth: .infinity).padding(18) }.background(Palette.teal.opacity(0.06), in: RoundedRectangle(cornerRadius: 20))
@@ -130,26 +137,31 @@ struct DashboardView: View {
 
 struct HalfCardLayoutKey: LayoutValueKey { static let defaultValue = false }
 
-struct CardEditMenu: View {
+struct CardDragPreview: View {
     let card: DashboardCard
-    let resize: (CardWidth) -> Void
-    let customize: () -> Void
-    let remove: () -> Void
     @EnvironmentObject var state: AppState
     var body: some View {
-        Menu {
-            Section(state.copy("Kartengröße", "Taille de la carte", "Card size")) {
-                Button { resize(.half) } label: { Label(state.copy("Klein", "Petite", "Small"), systemImage: card.width == .half ? "checkmark" : "square") }
-                Button { resize(.full) } label: { Label(state.copy("Breit", "Large", "Wide"), systemImage: card.width == .full ? "checkmark" : "rectangle") }
-            }
-            Button(action: customize) { Label(state.copy("Gestalten", "Personnaliser", "Customize"), systemImage: "paintpalette") }
-            Divider()
-            Button(role: .destructive, action: remove) { Label(state.copy("Entfernen", "Supprimer", "Remove"), systemImage: "trash") }
-        } label: {
-            Image(systemName: "arrow.up.left.and.arrow.down.right").font(.caption.bold()).foregroundStyle(card.accent)
+        RoundedRectangle(cornerRadius: 22)
+            .fill(card.accent.opacity(0.18))
+            .frame(width: card.width == .half ? 150 : 300, height: 120)
+            .overlay { Label(state.copy.card(card.id), systemImage: card.id.symbol).font(.headline).foregroundStyle(card.accent) }
+    }
+}
+
+struct CardResizeButton: View {
+    let card: DashboardCard
+    let resize: () -> Void
+    @EnvironmentObject var state: AppState
+    var body: some View {
+        Button(action: resize) {
+            Image(systemName: card.width == .half ? "arrow.up.left.and.arrow.down.right" : "arrow.down.right.and.arrow.up.left")
+                .font(.caption.bold()).foregroundStyle(card.accent)
                 .frame(width: 30, height: 30).background(.regularMaterial, in: Circle()).shadow(color: .black.opacity(0.14), radius: 4, y: 2)
-        }.accessibilityLabel(state.copy("Kartengröße und Optionen", "Taille et options de la carte", "Card size and options"))
+        }
+            .accessibilityLabel(card.width == .half ? state.copy("Karte verbreitern", "Agrandir la carte", "Make card wide") : state.copy("Karte verkleinern", "Réduire la carte", "Make card small"))
+            .accessibilityValue(card.width == .half ? state.copy("Klein", "Petite", "Small") : state.copy("Breit", "Large", "Wide"))
             .accessibilityIdentifier("resize-card-" + card.id.rawValue)
+            .selectionHaptic(card.width)
     }
 }
 
